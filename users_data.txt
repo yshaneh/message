@@ -1,9 +1,0 @@
-{
-  "admin": {
-    "start_salt": "5RJpr-v3T2K4wudpCG4POw==",
-    "end_salt": "YAEmL_UiTX2hp_1aq6IUAA==",
-    "password": "2e094648a2c3fc168a585361d082599cf5cb2a8dac2cdcafd0f02edbd1adcd28d1d5f11be982e339897e57c9d9f1a063217faeb3c7e67ced683e2bbade3875dd",
-    "type": "admin",
-    "is_logged": true
-  }
-}
