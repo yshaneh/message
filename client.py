@@ -2,7 +2,6 @@
 
 import socket
 import select
-import getch
 import sys
 import signal
 import crypt_keys
@@ -11,6 +10,7 @@ import _thread
 import random
 import string
 import threading
+#import getch
 
 
 
@@ -243,36 +243,35 @@ def handle_user_message(message, skt):
             if command != "":
                 handle_commands(command)
 
-def get_message_from_user(skt):
-    global user_message
-    user_message = "<you> "
-    print("\r                                        \r", end="")
-    print2(user_message, end="")
-    a = getch.getch()
-    if a ==  '\x7f':
-        if len(user_message) > 6:
-            user_message = user_message[:-1]
-    else:
-        if a != '\x1b':
-            user_message += a
-    print2("\r" + (" " * (len(user_message) + 10)), end="\r")
-    print2(user_message, end="")
-    if a == "\n":
-        handle_user_message(user_message[6:], skt)
-        user_message = "<you> "
-        print2(user_message, end="")
+# def get_message_from_user(skt):
+#     global user_message
+#     user_message = "<you> "
+#     print("\r                                        \r", end="")
+#     print2(user_message, end="")
+#     a = getch.getch()
+#     if a ==  '\x7f':
+#         if len(user_message) > 6:
+#             user_message = user_message[:-1]
+#     else:
+#         if a != '\x1b':
+#             user_message += a
+#     print2("\r" + (" " * (len(user_message) + 10)), end="\r")
+#     print2(user_message, end="")
+#     if a == "\n":
+#         handle_user_message(user_message[6:], skt)
+#         user_message = "<you> "
+#         print2(user_message, end="")
 
-def get_message_from_server(skt):
-    while connect:
-        message = get_message(skt)
-        if message == '':
-            disconnect()
-            return None
-        elif message == 1:
-            continue
-        print2("\r" + (" " * ( len(user_message) + 10)), end=message) # clean user message and prinr message from server
-        print2(user_message, end="") # return the user message back to the screen
-        sys.stdout.flush()
+# def get_message_from_server(skt):
+#     while connect:
+#         message = get_message(skt)
+#         if message == '':
+#             disconnect()
+#             return None
+#         elif message == 1:
+#             continue
+#         print2("\r" + (" " * ( len(user_message) + 10)), end=message) # clean user message and prinr message from server
+#         print2(user_message, end="") # return the user message back to the screen
 
 
 

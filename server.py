@@ -348,7 +348,7 @@ def send_to_everybody(message, conn):
     except:
         pass
     for c in client_users:
-        if c != conn and conn in client_users:
+        if c != conn and c in client_users:
             try:
                 send_message(c, message)
             except:
