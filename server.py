@@ -85,16 +85,27 @@ def handle_command(command, conn, addr):
     elif command == "change name":
         send_message(conn, "insert username of user you want to change...")
         old_username = get_message(conn)[:-1]
+        if not old_username:
+            return ''
         send_message("insert new username to this user...")
-        new_username = get_message(conn)[:-1]
+        new_username = get_message(conn)
+        if not new_username:
+            return ''
+        new_username = new_username[:-1]
         message, username = users.change_name(user, old_username, new_username)
         send_message(conn, message)
         send_message_to_user(username, "%s change your name to %s" % (user, username))
     elif command == "change type":
         send_message(conn, "insert username of user you want to change...")
-        username = get_message(conn)[:-1]
+        username = get_message(conn)
+        if not username:
+            return ''
+        username = username[:-1]
         send_message(conn, "insert the type you want the user will be...")
-        new_type = get_message(conn)[:-1]
+        new_type = get_message(conn)
+        if not new_type:
+            return ''
+        new_type = new_type[:-1]
         message = users.change_type(user, username, new_type)
         send_message(conn, message)
         conn_of_user = get_conn_by_username(username)
@@ -102,14 +113,23 @@ def handle_command(command, conn, addr):
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
     elif command == "create user":
         send_message(conn, "insert username to create")
-        username = get_message(conn)[:-1]
+        username = get_message(conn)
+        if not username:
+            return ''
+        username = username[:-1]
         send_message(conn, "insert password to create")
-        password = get_message(conn)[:-1]
+        password = get_message(conn)
+        if not password:
+            return ''
+        password = password[:-1]
         message = users.create_user(user, username, password)
         send_message(conn, message)
     elif command == "mute":
         send_message(conn, "insert username you want to mute")
-        username = get_message(conn)[:-1]
+        username = get_message(conn)
+        if not username:
+            return ''
+        username = username[:-1]
         success, message = users.mute(user, username)
         if success:
             users_muted[username] = True
@@ -117,7 +137,10 @@ def handle_command(command, conn, addr):
         send_message(conn, message)
     elif command == "unmute":
         send_message(conn, "insert username you want to unmute")
-        username = get_message(conn)[:-1]
+        username = get_message(conn)
+        if not username:
+            return ''
+        username = username[:-1]
         success, message = users.unmute(user, username)
         if success:
             users_muted[username] = False
@@ -125,7 +148,10 @@ def handle_command(command, conn, addr):
         send_message(conn, message)
     elif command == "kick":
         send_message(conn, "insert username you want to kick")
-        username = get_message(conn)[:-1]
+        username = get_message(conn)
+        if not username:
+            return ''
+        username = username[:-1]
         success, message = users.kick(user, username)
         if success:
             conn = get_conn_by_username(username)
