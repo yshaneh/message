@@ -7,7 +7,6 @@ import _thread
 import sys
 import select
 import signal
-import select
 import time
 import random
 import string
