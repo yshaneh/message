@@ -4,6 +4,13 @@
     "end_salt": "YAEmL_UiTX2hp_1aq6IUAA==",
     "password": "2e094648a2c3fc168a585361d082599cf5cb2a8dac2cdcafd0f02edbd1adcd28d1d5f11be982e339897e57c9d9f1a063217faeb3c7e67ced683e2bbade3875dd",
     "type": "admin",
-    "is_logged": true
+    "is_logged": false
+  },
+  "user": {
+    "start_salt": "-iCSYJBfSQqpKHtJeCrdgA==",
+    "end_salt": "aNB-N1vNSMWQqVkKX88x-A==",
+    "password": "9d41f9168af5e7a1c80c3aaa588605eb2180400a80df3b5cfb3f6889428a599e0843b4f8d538a2de3cda566f8e3e27a24af474b6d4c25aa3235300acbfdabddc",
+    "type": "user",
+    "is_logged": false
   }
 }
