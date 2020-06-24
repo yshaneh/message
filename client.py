@@ -19,7 +19,7 @@ found_ips = []
 threads = {}
 checked = 0
 commands = ["help", "change keys"]
-not_handle_commands = ["mute", "unmute", "change name", "change type", "creat user"]
+not_handle_commands = ["mute", "unmute", "change name", "change type", "creat user", "kick"]
 connect = False
 user_message = ""
 queue = ""
@@ -243,6 +243,15 @@ def handle_user_message(message, skt):
             if command != "":
                 handle_commands(command)
 
+def check_code(code, public_server):
+    print("you got code %s from server, please check with the server you got the same code as he sent" % code.decode())
+    if input("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_server):
+        print("probably someone listen to you, please check it and try again")
+        disconnect()
+        return False
+    return True
+    
+
 # def get_message_from_user(skt):
 #     global user_message
 #     user_message = "<you> "
@@ -303,12 +312,16 @@ skt.connect((IP, PORT))
 inputs = [skt, sys.stdin]
 connect = True
 
-print2("get server public key...")
-public_server = crypt_keys.str_to_public(skt.recv(socket_message_size))
+print2("get server public key")
+message = skt.recv(socket_message_size)
+public_server = crypt_keys.str_to_public(message[6:])
 print2("key received from server")
-print2("send your public key to server...")
-skt.send(str_public)
+check_code(message[:6], public_server)
+print2("send your public key and code to server")
+code = crypt_keys.generate_code(public_key)
+skt.send(code + str_public)
 print2("key is sent to the server\n\n")
+print2("send code %s to server, please verify the server got the same code" % code.decode())
 # send_message(input("enter your name: "), skt, public_server, private_key)
 # message = get_message(skt)
 # print(message[:-1])
