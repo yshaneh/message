@@ -38,14 +38,16 @@ PORT = 5555
 clients = []
 clients_keys = {}
 clients_address = {}
-private_key, public_key = crypt_keys.get_keys()
-str_public = crypt_keys.public_to_str(public_key)
+private_key = {}
+public_key = {}
 commands = ["change keys", "change name", "change type", "create users", "mute", "unmute", "kick"]
 client_users = {}
 client_queue = {}
 socket_message_size = 4096
 users_muted = {}
-code = crypt_keys.generate_code(public_key)
+writing = False
+original_input = input
+original_print = print
 
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
@@ -54,6 +56,20 @@ skt.listen(100)
 
 print("server start, listen on %s:%d" % (IP, PORT))
 
+
+def input(message):
+    global writing
+    while writing:
+        time.sleep(1)
+    writing = True
+    result = original_input(message)
+    writing = False
+    return result
+
+def print(message, end="\n"):
+    while writing:
+        time.sleep(1)
+    original_print(message, end=end)
 
 def get_conn_by_username(username):
     for i in client_users:
@@ -193,11 +209,11 @@ def sign_up(conn):
     success, message = users.login(username, password)
     return True
 
-def check_code(code, public_key, conn):
+def check_code(code, public_client_key, conn):
     print("you got code %s from client, please check with the server you got the same code as he sent" % code.decode())
-    if input("do you got the same code as client sent? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_key):
-        print("probably someone listen to you, please check it and try again")
-        remove(conn)
+    if input("do you got the same code as client sent? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_client_key):
+        remove(conn, "probably someone listen to you, please check it and try again")
+        
         return False
     return True
     
@@ -266,7 +282,7 @@ def get_message(conn):
             # conn.send(randomString())
             time.sleep(0.1)
             if crypt_keys.check(sign_message, message, clients_keys[conn]):
-                return crypt_keys.decrypt(message, private_key).decode()
+                return crypt_keys.decrypt(message, private_key[conn]).decode()
             else:
                 warn = "<server> A message was sent from this address that could not be verified! Note that someone may be trying to send messages on your behalf 3"
                 send_message(conn, warn)
@@ -275,9 +291,12 @@ def get_message(conn):
             return ''
 
 def handle_client(conn, addr):
+    global private_key, public_key
+    private_key[conn], public_key[conn] = crypt_keys.get_keys()
     client_queue[conn] = ""
+    code = crypt_keys.generate_code(public_key[conn])
     print("send public key  and code to %s:%d" % (addr[0], addr[1]))
-    conn.send(code + str_public)
+    conn.send(code + crypt_keys.public_to_str(public_key[conn]))
     print("key is sent")
     print("send to the client code: %s, please check with the clients he got hte same code." % code.decode())
     temp_message = conn.recv(socket_message_size)
@@ -327,7 +346,7 @@ def handle_client(conn, addr):
 
 def send_message(conn, message):
     message = crypt_keys.encrypt(message, clients_keys[conn])
-    sign_message = crypt_keys.sign(message, private_key)
+    sign_message = crypt_keys.sign(message, private_key[conn])
     message = message_with_len(message) 
     sign_message = message_with_len(sign_message)
     conn.send(message + sign_message)
