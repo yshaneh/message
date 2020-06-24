@@ -70,6 +70,7 @@ def print(message, end="\n"):
     while writing:
         time.sleep(1)
     original_print(message, end=end)
+    sys.stdout.flush()
 
 def get_conn_by_username(username):
     for i in client_users:
@@ -171,7 +172,8 @@ def handle_command(command, conn, addr):
         if success:
             conn = get_conn_by_username(username)
             if conn:
-                remove(conn, "%s kicked you" % user)
+                send_message(conn, "%s kicked you" % user)
+                remove(conn, "%s kicked %s" % (user, client_users[conn]))
             send_message_to_user(username, "%s has kicked you" % user)
         send_message(conn, message)
         
@@ -280,7 +282,7 @@ def get_message(conn):
         if message:
             message, sign_message = extract_messages(message)
             # conn.send(randomString())
-            time.sleep(0.1)
+            time.sleep(0.5)
             if crypt_keys.check(sign_message, message, clients_keys[conn]):
                 return crypt_keys.decrypt(message, private_key[conn]).decode()
             else:
@@ -354,6 +356,7 @@ def send_message(conn, message):
     time.sleep(0.1)
 
 def remove(conn, message):
+    global clients, clients_keys, client_users
     print(message)
     conn.close()
     if conn in clients:
@@ -364,6 +367,10 @@ def remove(conn, message):
         pass
     if conn in client_users:
         users.logout(client_users[conn])
+        try:
+            del client_users[conn]
+        except:
+            pass
 
 
 
@@ -389,8 +396,7 @@ def server_messages():
         server_message = ""
         for inp in read:
             server_message = sys.stdin.readline().rstrip()
-            print("\033[1A\033[K", end="")
-            print("<you>", server_message)
+            print("\033[1A\033[K<you>%s" % server_message)
             server_message = "<server> " + server_message
             send_to_everybody(server_message, None)
 
