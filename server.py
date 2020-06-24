@@ -3,7 +3,7 @@
 import users
 import crypt_keys
 import socket
-import _thread
+import _thread as thread
 import sys
 import select
 import signal
@@ -298,7 +298,7 @@ def handle_client(conn, addr):
     print("send public key  and code to %s:%d" % (addr[0], addr[1]))
     conn.send(code + crypt_keys.public_to_str(public_key[conn]))
     print("key is sent")
-    print("send to the client code: %s, please check with the clients he got hte same code." % code.decode())
+    print("send to the client code: %s, please check with the clients he got the same code." % code.decode())
     temp_message = conn.recv(socket_message_size)
     if temp_message:
         print("get public key from %s:%d" % (addr[0], addr[1]))
@@ -394,10 +394,10 @@ def server_messages():
             server_message = "<server> " + server_message
             send_to_everybody(server_message, None)
 
-_thread.start_new_thread(server_messages, ())
+thread.start_new_thread(server_messages, ())
 
 while True:
     conn, addr = skt.accept()
     clients.append(conn)
     print(str(addr[0]) + " connected")
-    _thread.start_new_thread(handle_client, (conn, addr))
+    thread.start_new_thread(handle_client, (conn, addr))
