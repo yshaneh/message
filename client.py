@@ -18,12 +18,24 @@ import threading
 found_ips = []
 threads = {}
 checked = 0
-commands = ["help", "change keys"]
-not_handle_commands = ["mute", "unmute", "change name", "change type", "creat user", "kick"]
+commands = ["help", "chkeys"]
+not_handle_commands = ["mute", "unmute", "chname", "chtype", "creat user", "kick"]
 connect = False
 user_message = ""
 queue = ""
-socket_message_size = 4096
+socket_message_size = 1030
+wrting = False
+
+help = { 
+"chkeys": "!chkeys",
+"chname": "!chname [new name]",
+"chtype": "!chtype [username] [new type]",
+"create user": "!create user [username] [password] [(optional) type]",
+"mute": "!mute [username]",
+"unmute": "!unmute [username]",
+"kick": "!kick [username]",
+"help": "!help [(optional) command]"
+}
 
 def print2(message, end="\n"):
     print(message, end=end)
@@ -47,19 +59,34 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 
-def handle_commands(command):
+def handle_commands(message):
     global private_key, public_key, str_public
+    message = message.split(" ")
+    command = message[0]
+    params = message[1:]
+    paramnum = len(params)
     if command not in commands:
         if command in not_handle_commands:
             return None
-        print2("Invalid command! insert !help for list of commands")
+        print2("Invalid command! type '!help'")
         return None
     if command == "help":
-        print2("\ncommands are: \n")
-        for i in range(len(commands)):
-            print2("%d: %s" % (i+1, commands[i]))
+        if paramnum == 0: 
+            print2("\ncommands are: \n")
+            for i in commands:
+                print2(i)
+            for i in not_handle_commands:
+                print2(i)
+        elif paramnum == 1:
+            if params[0] in help:
+                print2(help[params[0]])
+            else:
+                print2("command %s not found" % params[0])
+        else:
+            print("invaild useage! type '!help help'")
+        
 
-    elif command == "change keys":
+    elif command == "chkeys":
         print2("\ngenerate new keys...")
         private_key, public_key = crypt_keys.get_keys()
         str_public = crypt_keys.public_to_str(public_key)
@@ -193,7 +220,6 @@ def send_message(message, skt, public_server, private_key):
     sign_message = message_with_len(sign_message)
     skt.send(message + sign_message)
     # nothing = skt.recv(socket_message_size)
-    #time.sleep(0.1)
 
 def disconnect():
     global connect
@@ -348,6 +374,9 @@ while True and connect:
                 print2("<you> ", end="")    
             
         else:
+            while wrting:
+                time.sleep(0.5)
+            wrting = True
             message = sys.stdin.readline().rstrip()
             end_of_message = "q"
             command = ""
@@ -363,7 +392,9 @@ while True and connect:
             send_message(message, skt, public_server, private_key)
             if command != "":
                 handle_commands(command)
+            time.sleep(0.5)
             print2("<you> ", end="")
+            wrting = False
             
             
             # get_message_from_user(skt)    # if work than need only this to get message from user!

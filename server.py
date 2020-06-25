@@ -18,6 +18,7 @@ import string
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
     users.save()
+    users.exit()
     try:
         skt.close()
     except:
@@ -40,21 +41,14 @@ clients_keys = {}
 clients_address = {}
 private_key = {}
 public_key = {}
-commands = ["change keys", "change name", "change type", "create users", "mute", "unmute", "kick"]
+commands = ["chkeys", "chname", "chtype", "create user", "mute", "unmute", "kick"]
 client_users = {}
 client_queue = {}
-socket_message_size = 4096
+socket_message_size = 1030
 users_muted = {}
 writing = False
 original_input = input
 original_print = print
-
-skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
-skt.bind((IP, PORT))
-skt.listen(100)
-
-print("server start, listen on %s:%d" % (IP, PORT))
 
 
 def input(message):
@@ -72,25 +66,29 @@ def print(message, end="\n"):
     original_print(message, end=end)
     sys.stdout.flush()
 
-def get_conn_by_username(username):
+def get_conn_by_username(username, conn):
     for i in client_users:
         if client_users[i] == username:
             return conn
     return False
 
 
-def send_message_to_user(username, message):
-    user_conn = get_conn_by_username(username)
+def send_message_to_user(username, message, conn):
+    user_conn = get_conn_by_username(username, conn)
     if user_conn:
         send_message(user_conn, message)
 
-def handle_command(command, conn, addr):
+def handle_command(message, conn, addr):
     global client_users
     user = client_users[conn]
+    message = message.split(" ")
+    command = message[0]
+    params = message[1:]
+    paramsnum = len(params)
     if command not in commands:
-        send_message(conn, "<server> invail command!")
+        send_message(conn, "<server> invaild command! type '!help'")
         return True
-    if command == "change keys":
+    if command == "chkeys":
         temp_message = conn.recv(socket_message_size)
         if temp_message:
                 print("get public key from %s:%d" % (addr[0], addr[1]))
@@ -98,43 +96,44 @@ def handle_command(command, conn, addr):
                 return True
         else:
             return False
-    elif command == "change name":
-        send_message(conn, "insert username of user you want to change...")
-        old_username = get_message(conn)[:-1]
-        if not old_username:
-            return ''
-        send_message("insert new username to this user...")
-        new_username = get_message(conn)
-        if not new_username:
-            return ''
-        new_username = new_username[:-1]
-        message, username = users.change_name(user, old_username, new_username)
+    elif command == "chname":
+        if paramsnum != 2:
+            send_message(conn, "<server> invaild usage! type '!help chname'")
+            return True
+        old_username = params[0]
+        new_username = params[1]
+        success, message, username = users.change_name(user, old_username, new_username)
         send_message(conn, message)
-        send_message_to_user(username, "%s change your name to %s" % (user, username))
-    elif command == "change type":
-        send_message(conn, "insert username of user you want to change...")
-        username = get_message(conn)
-        if not username:
-            return ''
-        username = username[:-1]
-        send_message(conn, "insert the type you want the user will be...")
-        new_type = get_message(conn)
-        if not new_type:
-            return ''
-        new_type = new_type[:-1]
-        message = users.change_type(user, username, new_type)
+        tmp = get_conn_by_username(old_username)
+        if tmp:
+            client_users[tmp] = username
+            if success:
+                send_message_to_user(username, "%s change your name to %s" % (user, username), conn)
+        
+
+    elif command == "chtype":
+        if paramsnum != 2:
+            send_message(conn, "<server> invaild usage! type '!help'")
+        username = params[0]
+        new_type = params[1]
+        success, message = users.change_type(user, username, new_type)
         send_message(conn, message)
-        conn_of_user = get_conn_by_username(username)
+        conn_of_user = get_conn_by_username(username, conn)
         if conn_of_user:
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
-    elif command == "create user":
+            if success:
+                send_message_to_user(username, "%s change your type to %s" % (client_users[conn], new_type))
+
+        
+    #stoped here, need to change the commands work
+    elif command == "create user": 
         send_message(conn, "insert username to create")
-        username = get_message(conn)
+        username = get_message(conn, addr)
         if not username:
             return ''
         username = username[:-1]
         send_message(conn, "insert password to create")
-        password = get_message(conn)
+        password = get_message(conn, addr)
         if not password:
             return ''
         password = password[:-1]
@@ -142,49 +141,49 @@ def handle_command(command, conn, addr):
         send_message(conn, message)
     elif command == "mute":
         send_message(conn, "insert username you want to mute")
-        username = get_message(conn)
+        username = get_message(conn, addr)
         if not username:
             return ''
         username = username[:-1]
         success, message = users.mute(user, username)
         if success:
             users_muted[username] = True
-            send_message_to_user(username, "%s has muted you" % user)
+            send_message_to_user(username, "%s has muted you" % user, conn)
         send_message(conn, message)
     elif command == "unmute":
         send_message(conn, "insert username you want to unmute")
-        username = get_message(conn)
+        username = get_message(conn, addr)
         if not username:
             return ''
         username = username[:-1]
         success, message = users.unmute(user, username)
         if success:
             users_muted[username] = False
-            send_message_to_user(username, "%s has unmuted you" % user)
+            send_message_to_user(username, "%s has unmuted you" % user, conn)
         send_message(conn, message)
     elif command == "kick":
         send_message(conn, "insert username you want to kick")
-        username = get_message(conn)
+        username = get_message(conn, addr)
         if not username:
             return ''
         username = username[:-1]
         success, message = users.kick(user, username)
         if success:
-            conn = get_conn_by_username(username)
+            conn = get_conn_by_username(username, conn)
             if conn:
                 send_message(conn, "%s kicked you" % user)
                 remove(conn, "%s kicked %s" % (user, client_users[conn]))
-            send_message_to_user(username, "%s has kicked you" % user)
+            send_message_to_user(username, "%s has kicked you" % user, conn)
         send_message(conn, message)
         
     
 
-def sign_up(conn):
+def sign_up(conn, addr):
     success = False
     while not success:
         send_message(conn, "insert username 0")
         print("get username from %s" % addr[0])
-        username = get_message(conn)
+        username = get_message(conn, addr)
         #time.sleep(2)
         if not username:
             return False
@@ -192,7 +191,7 @@ def sign_up(conn):
         print("receive username '%s' from %s\n" % (username, addr[0]))
         print("get password from %s\n" % addr[0])
         send_message(conn, "insert password1")
-        password = get_message(conn)
+        password = get_message(conn, addr)
         #time.sleep(2)
         if not password:
             return False
@@ -228,7 +227,7 @@ def message_with_len(message):
     return ("0" * (3 - len(str_len))).encode() + str_len.encode() + message
     
 
-def extract_messages(message_and_sign):
+def extract_messages(message_and_sign, conn):
     global client_queue
     try:
         message_and_sign = message_and_sign.encode()
@@ -237,9 +236,9 @@ def extract_messages(message_and_sign):
     tmp_len = int(message_and_sign[:3]) + 3
     message = message_and_sign[3:tmp_len]
     message_and_sign = message_and_sign[tmp_len:]
-    tmp_len = int(message_and_sign[:3]) + 3
-    sign_message = message_and_sign[3:tmp_len]
-    message_and_sign = message_and_sign[tmp_len:]
+    tmp_sign_len = int(message_and_sign[:3]) + 3
+    sign_message = message_and_sign[3:tmp_sign_len]
+    message_and_sign = message_and_sign[tmp_sign_len:]
     client_queue[conn] = message_and_sign
     return (message, sign_message)
 
@@ -250,7 +249,7 @@ def login(conn, addr):
     while not logged:
         print("get username from %s" % addr[0])
         send_message(conn, "%sinsert username (or 'sign up' for sign up) 0" % message) # extension 0 tells the client to insert a username
-        username = get_message(conn)
+        username = get_message(conn, addr)
         #time.sleep(2)
         if not username:
             return False
@@ -258,10 +257,10 @@ def login(conn, addr):
         username = username[:-1]
         if username == 'sign up':
             print("%s sign up now..." % addr[0])
-            return sign_up(conn)
+            return sign_up(conn, addr)
         print("get password from %s" % addr[0])
         send_message(conn, "insert passord1") # extension 1 tells the user to insert a password
-        password = get_message(conn)
+        password = get_message(conn, addr)
         #time.sleep(2)
         if not password:
             return False
@@ -274,14 +273,14 @@ def login(conn, addr):
     print("%s logged in successfully as %s" % (addr[0], username))
     return True  
 
-def get_message(conn):
+def get_message(conn, addr):
     while True:
         if client_queue[conn]:
             message = client_queue[conn]
         else:
             message = conn.recv(socket_message_size)
         if message:
-            message, sign_message = extract_messages(message)
+            message, sign_message = extract_messages(message, conn)
             # conn.send(randomString())
             time.sleep(0.5)
             if crypt_keys.check(sign_message, message, clients_keys[conn]):
@@ -314,7 +313,7 @@ def handle_client(conn, addr):
         return None
     clients_address[conn] = addr[0] + ":" + str(addr[1])
     print("key recived")
-    # name = get_message(conn)
+    # name = get_message(conn, addr)
     # accept = input("%s try to connect to server in name '%s', do aprove? ('y' for yes and everythingelse for no): " %  (clients_address[conn], name))
     # if accept.lower() != 'y':
     #     send_message(conn, 'server refuse to connected! n')
@@ -327,7 +326,7 @@ def handle_client(conn, addr):
     send_message(conn, "welcome to my chat room :)\n\n")
     while  True:
         try:
-            message = get_message(conn)
+            message = get_message(conn, addr)
             if message:
                 if message[-1] == "c":
                     message = message[:-1]
@@ -401,10 +400,24 @@ def server_messages():
             server_message = "<server> " + server_message
             send_to_everybody(server_message, None)
 
-thread.start_new_thread(server_messages, ())
 
-while True:
-    conn, addr = skt.accept()
-    clients.append(conn)
-    print(str(addr[0]) + " connected")
-    thread.start_new_thread(handle_client, (conn, addr))
+def main():
+    skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+    skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
+    skt.bind((IP, PORT))
+    skt.listen(100)
+
+    print("server start, listen on %s:%d" % (IP, PORT))
+
+
+
+    thread.start_new_thread(server_messages, ())
+
+    while True:
+        conn, addr = skt.accept()
+        clients.append(conn)
+        print(str(addr[0]) + " connected")
+        thread.start_new_thread(handle_client, (conn, addr))
+
+if __name__ == "__main__":
+    main()
