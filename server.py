@@ -34,7 +34,18 @@ signal.signal(signal.SIGINT, signal_handler)
 
 print("press ^C (Ctrl+C) to exit")
 
-IP = "0.0.0.0"
+
+def get_ip():
+    s = socket.socket()
+    s.settimeout(10)
+    try:
+        s.connect(('8.8.8.8', 8080))
+        return s.getsockname()[0]
+    except:
+        return '0.0.0.0'
+
+
+IP = get_ip()
 PORT = 5555
 clients = []
 clients_keys = {}
