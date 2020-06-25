@@ -246,9 +246,10 @@ def extract_messages(message_and_sign):
 def login(conn, addr):
     global client_users
     logged = False
+    message = ""
     while not logged:
         print("get username from %s" % addr[0])
-        send_message(conn, "insert username (or 'sign up' for sign up) 0") # extension 0 tells the client to insert a username
+        send_message(conn, "%sinsert username (or 'sign up' for sign up) 0" % message) # extension 0 tells the client to insert a username
         username = get_message(conn)
         #time.sleep(2)
         if not username:
@@ -268,7 +269,7 @@ def login(conn, addr):
         print("password '%s' received from %s" % (password, addr[0]))
         logged, message = users.login(username, password)
         #time.sleep(4)
-        send_message(conn, message)
+    send_message(conn, message)
     client_users[conn] = username
     print("%s logged in successfully as %s" % (addr[0], username))
     return True  

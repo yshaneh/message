@@ -15,6 +15,15 @@ users = {
         'is_logged' : False
     }
 }
+
+
+try:
+    with open("users_data.json") as file:
+        users = json.load(file)
+except:
+    pass
+
+
 types = ["user", "admin"]
 file_name = "users_data.json"
 invaild_names = ['guest', '', 'sign up', 'server']
@@ -76,15 +85,15 @@ def create_user(creator_name, username, password):
 
 def login(username, password):
     if username not in users:
-        return (False, "wrong username or password, please try again...3")
+        return (False, "wrong username or password, please try again...\n\n")
     if users[username]["is_logged"]:
-        return (False, "user is already logged in0")
+        return (False, "user is already logged in\n\n")
     user = users[username]
     salted_password = (user["start_salt"] + password + user["end_salt"]).encode()
     if user["password"] == SHA512.new(salted_password).hexdigest():
         users[username]["is_logged"] = True
         return (True, "you have successfully logged in as %s2" % username)
-    return (False, "wrong username or password, please try again...0")
+    return (False, "wrong username or password, please try again...\n\n")
 
 def logout(username):
     if username in users:
