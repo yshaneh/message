@@ -66,10 +66,10 @@ def print(message, end="\n"):
     original_print(message, end=end)
     sys.stdout.flush()
 
-def get_conn_by_username(username, conn):
-    for i in client_users:
+def get_conn_by_username(username):
+    for c in client_users:
         if client_users[i] == username:
-            return conn
+            return c
     return False
 
 
@@ -109,8 +109,6 @@ def handle_command(message, conn, addr):
             client_users[tmp] = username
             if success:
                 send_message_to_user(username, "%s change your name to %s" % (user, username), conn)
-        
-
     elif command == "chtype":
         if paramsnum != 2:
             send_message(conn, "<server> invaild usage! type '!help'")
@@ -123,58 +121,45 @@ def handle_command(message, conn, addr):
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
             if success:
                 send_message_to_user(username, "%s change your type to %s" % (client_users[conn], new_type))
-
-        
-    #stoped here, need to change the commands work
-    elif command == "create user": 
-        send_message(conn, "insert username to create")
-        username = get_message(conn, addr)
-        if not username:
-            return ''
-        username = username[:-1]
-        send_message(conn, "insert password to create")
-        password = get_message(conn, addr)
-        if not password:
-            return ''
-        password = password[:-1]
-        message = users.create_user(user, username, password)
+    elif command == "create user":
+        if paramsnum == 2:
+            params[2] = 'user'
+            paramsnum += 1
+        if paramsnum != 3:
+            send_message(conn, "<server> invaild usage! type '!help'")
+            return True
+        username = params[0]
+        password = params[1]
+        usertype = params[2]
+        message = users.create_user(user, username, password, usertype)
         send_message(conn, message)
     elif command == "mute":
-        send_message(conn, "insert username you want to mute")
-        username = get_message(conn, addr)
-        if not username:
-            return ''
-        username = username[:-1]
+        if paramsnum != 1:
+            send_message(conn, "<server> invaild usage! type '!help'")
+            return True
+        username = params[0]
         success, message = users.mute(user, username)
         if success:
             users_muted[username] = True
             send_message_to_user(username, "%s has muted you" % user, conn)
         send_message(conn, message)
     elif command == "unmute":
-        send_message(conn, "insert username you want to unmute")
-        username = get_message(conn, addr)
-        if not username:
-            return ''
-        username = username[:-1]
+        username = params[0]
         success, message = users.unmute(user, username)
         if success:
             users_muted[username] = False
             send_message_to_user(username, "%s has unmuted you" % user, conn)
         send_message(conn, message)
     elif command == "kick":
-        send_message(conn, "insert username you want to kick")
-        username = get_message(conn, addr)
-        if not username:
-            return ''
-        username = username[:-1]
+        username = params[0]
         success, message = users.kick(user, username)
         if success:
-            conn = get_conn_by_username(username, conn)
-            if conn:
-                send_message(conn, "%s kicked you" % user)
-                remove(conn, "%s kicked %s" % (user, client_users[conn]))
+            c = get_conn_by_username(username)
+            if c:
+                remove(c, "%s kicked %s" % (user, client_users[c]))
             send_message_to_user(username, "%s has kicked you" % user, conn)
         send_message(conn, message)
+    return True
         
     
 

@@ -84,8 +84,6 @@ def handle_commands(message):
                 print2("command %s not found" % params[0])
         else:
             print("invaild useage! type '!help help'")
-        
-
     elif command == "chkeys":
         print2("\ngenerate new keys...")
         private_key, public_key = crypt_keys.get_keys()

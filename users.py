@@ -55,7 +55,7 @@ def save():
     with open(file_name, "w") as file:
         json.dump(users, file, indent=2)
 
-def create_user(creator_name, username, password, type="user"):
+def create_user(creator_name, username, password, usertype="user"):
     # check whether the user has permissions to create users
     try:
         if not is_admin(creator_name):
@@ -70,7 +70,7 @@ def create_user(creator_name, username, password, type="user"):
         return False, "username is already exists"
     if username in invaild_names:
         return False, "can't creat user with that name!"
-    if type not in types:
+    if usertype not in types:
         return False, "Invaild type!"
     users[username] = {}
     start_salt = base64.urlsafe_b64encode(uuid.uuid4().bytes)
@@ -80,7 +80,7 @@ def create_user(creator_name, username, password, type="user"):
     salted_password = start_salt + password.encode() + end_salt
     hashed_password = SHA512.new(salted_password)
     users[username]["password"] = hashed_password.hexdigest()
-    users[username]["type"] = type
+    users[username]["type"] = usertype
     users[username]["is_logged"] = False
     save()
     return True, "user created successfully"
@@ -139,7 +139,7 @@ def mute(user, username):
     if not is_admin(user):
         return False, "permission denied"
     if not user_exist(username):
-        return "user does not exist"
+        return False, "user does not exist"
     if users[username]["is_logged"]:
         return True, username + " muted successfully!"
     return False, "user is not connected"
@@ -149,7 +149,7 @@ def unmute(user, username):
     if not is_admin(user):
         return False, "permission denied"
     if not user_exist(username):
-        return "user does not exist"
+        return False, "user does not exist"
     if users[username]["is_logged"]:
         return True, "%s unmuted successfully" % username
     return False, "user is not connected"
