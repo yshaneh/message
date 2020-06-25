@@ -4,6 +4,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends.openssl.rsa import InvalidSignature
+from hashlib import sha512
 
 
 def get_keys():
@@ -79,3 +80,14 @@ def check(sign_message, message, public_key):
     except InvalidSignature:
         return False
 
+def six(string):
+    while len(string) < 6:
+        string = "0" + string
+    return string
+
+def generate_code(public_key):
+    #return str(public_key.public_numbers().n % 1000000).encode()
+    return six(str(int(sha512(public_to_str(public_key)).hexdigest(), 32) % 1000000)).encode()
+
+def verify_code(code, public_key):
+    return generate_code(public_key) == code
