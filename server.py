@@ -190,7 +190,7 @@ def handle_command(message, conn):
                     message += "[%s] %s : %s\n" % (users.users[username]['type'],  username,  client_ip[c])
                 send_message(conn, message)
             else:
-                exist, c = get_conn_by_username[params[0]]
+                exist, c = get_conn_by_username([params[0]])
                 if not exist:
                     send_message(conn, "user %s does not exsit!" % params[0])
                     return True
@@ -202,7 +202,7 @@ def handle_command(message, conn):
             except ValueError:
                 send_message(conn, message)
             username = params[1 - index]
-            exist, c = get_conn_by_username[username]
+            exist, c = get_conn_by_username([username])
             if not exist:
                 send_message(conn, message)
                 return True
