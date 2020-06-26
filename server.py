@@ -180,9 +180,9 @@ def handle_command(message, conn):
                 message += "[%s] %s\n" % (users.users[username]['type'], username)
             send_message(conn, message)
         elif paramsnum == 1:
-            if params[0] == "-ip":
+            if params[0] == "--ip":
                 if not users.is_admin(client_users[conn]):
-                    send_message(conn, "<server> permission denied! only admin can use the -ip option")
+                    send_message(conn, "<server> permission denied! only admin can use the --ip option")
                     return True
                 message = ""
                 for c in client_users:
@@ -192,13 +192,13 @@ def handle_command(message, conn):
             else:
                 exist, c = get_conn_by_username[params[0]]
                 if not exist:
-                    send_message(conn, "<server> invaild useage! type '!help'")
+                    send_message(conn, "user %s does not exsit!" % params[0])
                     return True
                 send_message(conn, "[%s] %s" % (users.users[paramds[0]]['type'], params[0]))
         elif paramsnum == 2:
             message = "<server> invaild useage! type '!help'"
             try:
-                index = params.index("-ip")
+                index = params.index("--ip")
             except ValueError:
                 send_message(conn, message)
             username = params[1 - index]
