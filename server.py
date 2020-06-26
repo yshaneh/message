@@ -178,7 +178,7 @@ def handle_command(message, conn):
             for c in client_users:
                 username = client_users[c]
                 message += "[%s] %s" % (users.users[username]['type'], username)
-            send_message(conn, "\n".join(client_users.value()))
+            send_message(conn, message)
         elif paramsnum == 1:
             if params[0] == "-ip":
                 if not users.is_admin(client_usersp[conn]):
@@ -418,10 +418,6 @@ def remove(conn, message, reason):
             client_users.remove(conn)
         except:
             pass
-
-
-
-
 
 def send_to_everybody(message, conn):
     try:
