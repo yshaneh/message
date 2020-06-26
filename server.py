@@ -177,11 +177,11 @@ def handle_command(message, conn):
             message = ""
             for c in client_users:
                 username = client_users[c]
-                message += "[%s] %s" % (users.users[username]['type'], username)
+                message += "[%s] %s\n" % (users.users[username]['type'], username)
             send_message(conn, message)
         elif paramsnum == 1:
             if params[0] == "-ip":
-                if not users.is_admin(client_usersp[conn]):
+                if not users.is_admin(client_users[conn]):
                     send_message(conn, "<server> permission denied! only admin dan use the -ip option")
                     return True
                 message = ""
