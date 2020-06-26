@@ -19,14 +19,14 @@ found_ips = []
 threads = {}
 checked = 0
 commands = ["help", "chkeys"]
-not_handle_commands = ["mute", "unmute", "chname", "chtype", "creat user", "kick"]
+not_handle_commands = ["mute", "unmute", "chname", "chtype", "creat user", "kick", "users"]
 connect = False
 user_message = ""
 queue = ""
 socket_message_size = 1030
 wrting = False
 
-help = { 
+help = {
 "chkeys": "!chkeys",
 "chname": "!chname [new name]",
 "chtype": "!chtype [username] [new type]",
@@ -34,6 +34,7 @@ help = {
 "mute": "!mute [username]",
 "unmute": "!unmute [username]",
 "kick": "!kick [username]",
+"users": "!users [(optional flag) -ip] [(optional) username]"
 "help": "!help [(optional) command]"
 }
 
@@ -71,7 +72,7 @@ def handle_commands(message):
         print2("Invalid command! type '!help'")
         return None
     if command == "help":
-        if paramnum == 0: 
+        if paramnum == 0:
             print2("\ncommands are: \n")
             for i in commands:
                 print2(i)
@@ -93,7 +94,7 @@ def handle_commands(message):
         skt.send(str_public)
         print2("public key is sent to the server\n")
 
-    
+
 def message_with_len(message):
     try:
         message = message.encode()
@@ -169,9 +170,9 @@ def search_on_network():
         temp_ip = network_ip + str(i)
         threads[i] = threading.Thread(target=is_on, args=(temp_ip,))
         threads[i].start()
-    animate()    
+    animate()
     choose_ip(found_ips)
-    
+
 def extract_messages(message_and_sign):
     global queue
     try:
@@ -187,7 +188,7 @@ def extract_messages(message_and_sign):
     queue = message_and_sign
     return (message, sign_message)
 
-    
+
 
 
 def get_message(skt):
@@ -214,7 +215,7 @@ def get_message(skt):
 def send_message(message, skt, public_server, private_key):
     message = crypt_keys.encrypt(message, public_server)
     sign_message = crypt_keys.sign(message, private_key)
-    message = message_with_len(message) 
+    message = message_with_len(message)
     sign_message = message_with_len(sign_message)
     skt.send(message + sign_message)
     # nothing = skt.recv(socket_message_size)
@@ -253,7 +254,7 @@ def login(skt, public_server, private_key):
             send_message(password, skt, public_server, private_key)
         elif end_of_message == 2:
             logged_in = True
-    
+
 def handle_user_message(message, skt):
     end_of_message = "q"
     command = ""
@@ -274,7 +275,7 @@ def check_code(code, public_server):
         disconnect()
         return False
     return True
-    
+
 
 # def get_message_from_user(skt):
 #     global user_message
@@ -369,8 +370,8 @@ while True and connect:
                 continue
             else:
                 print2("\r" + (" " * 100) + "\r"  + message)
-                print2("<you> ", end="")    
-            
+                print2("<you> ", end="")
+
         else:
             while wrting:
                 time.sleep(0.5)
@@ -393,8 +394,8 @@ while True and connect:
             time.sleep(0.5)
             print2("<you> ", end="")
             wrting = False
-            
-            
+
+
             # get_message_from_user(skt)    # if work than need only this to get message from user!
 
 

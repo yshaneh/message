@@ -52,7 +52,7 @@ clients_keys = {}
 clients_address = {}
 private_key = {}
 public_key = {}
-commands = ["chkeys", "chname", "chtype", "create user", "mute", "unmute", "kick"]
+commands = ["chkeys", "chname", "chtype", "create user", "mute", "unmute", "kick", "users"]
 client_users = {}
 client_queue = {}
 socket_message_size = 1030
@@ -60,6 +60,7 @@ users_muted = {}
 writing = False
 original_input = input
 original_print = print
+client_ip = {}
 
 
 def input(message):
@@ -89,7 +90,7 @@ def send_message_to_user(username, message, conn):
     if user_conn:
         send_message(user_conn, message)
 
-def handle_command(message, conn, addr):
+def handle_command(message, conn):
     global client_users
     user = client_users[conn]
     message = message.split(" ")
@@ -102,7 +103,7 @@ def handle_command(message, conn, addr):
     if command == "chkeys":
         temp_message = conn.recv(socket_message_size)
         if temp_message:
-                print("get public key from %s:%d" % (addr[0], addr[1]))
+                print("get public key from %s" % client_ip[conn])
                 clients_keys[conn] = crypt_keys.str_to_public(temp_message)
                 return True
         else:
@@ -171,6 +172,43 @@ def handle_command(message, conn, addr):
                 remove(c, reason , reason)
             send_message_to_user(username, "%s has kicked you" % user, conn)
         send_message(conn, message)
+    elif command == "users":
+        if paramsnum == 0:
+            message = ""
+            for c in client_users:
+                username = client_users[c]
+                message += "[%s] %s" % (users.users[username]['type'], username)
+            send_message(conn, "\n".join(client_users.value()))
+        elif paramsnum == 1:
+            if params[0] == "-ip":
+                if not users.is_admin(client_usersp[conn]):
+                    send_message(conn, "<server> permission denied! only admin dan use the -ip option")
+                    return True
+                message = ""
+                for c in client_users:
+                    username = client_users[c]
+                    message += "[%s] %s : %s\n" % (users.users[username]['type'],  username,  client_ip[c])
+                send_message(conn, message)
+            else:
+                c = get_conn_by_username[params[0]]
+                if not c:
+                    send_message(conn, "<server> invaild useage! type '!help'")
+                    return True
+                send_message(conn, "[%s] %s" % (users.users[paramds[0]]['type'], params[0]))
+        elif paramsnum == 2:
+            message = "<server> invaild useage! type '!help'"
+            try:
+                index = params.index("-ip")
+            except ValueError:
+                send_message(conn, message)
+            username = params[1 - index]
+            c = get_conn_by_username[username]
+            if not c:
+                send_message(conn, message)
+                return True
+            send_message(conn, "[%s] %s : %s" % (users.users[username]['type'], params[0], client_ip[c]))
+        else:
+            send_message(conn, "<server> invaild useage! type '!help'")
     return True
 
 
@@ -296,6 +334,7 @@ def handle_client(conn, addr):
     global private_key, public_key
     private_key[conn], public_key[conn] = crypt_keys.get_keys()
     client_queue[conn] = ""
+    client_ip[conn] = addr[0]
     code = crypt_keys.generate_code(public_key[conn])
     print("send public key  and code to %s:%d" % (addr[0], addr[1]))
     conn.send(code + crypt_keys.public_to_str(public_key[conn]))
@@ -335,7 +374,7 @@ def handle_client(conn, addr):
                 if message[-1] == "c":
                     message = message[:-1]
                     print("recive command: " + name + message)
-                    if not handle_command(message, conn, addr):
+                    if not handle_command(message, conn):
                         reason = ""
                         if con in client_users:
                             reason = "%s disconnected" % client_users[conn]
