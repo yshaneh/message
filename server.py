@@ -349,7 +349,7 @@ def handle_client(conn, addr):
             return None
     else:
         reason = ""
-        if con in client_users:
+        if conn in client_users:
             reason = "%s disconnected" % client_users[conn]
         remove(conn, addr[0] + " disconnected", reason)
         return None
@@ -366,7 +366,7 @@ def handle_client(conn, addr):
         return None
     name = "<" + client_users[conn] + "> "
     send_message(conn, "welcome to my chat room :)\n\n")
-    send_to_everybody(conn, "%s joined" % client_users[conn])
+    send_to_everybody("%s joined" % client_users[conn], conn)
     while  True:
         try:
             message = get_message(conn, addr)
@@ -412,7 +412,7 @@ def remove(conn, message, reason):
     except:
         pass
     if conn in client_users:
-        send_to_everybody(conn, reason)
+        send_to_everybody(reason, conn)
         users.logout(client_users[conn])
         try:
             client_users.remove(conn)
