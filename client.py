@@ -34,7 +34,7 @@ help = {
 "mute": "!mute [username]",
 "unmute": "!unmute [username]",
 "kick": "!kick [username]",
-"users": "!users [(optional flag) -ip] [(optional) username]"
+"users": "!users [(optional flag) -ip] [(optional) username]",
 "help": "!help [(optional) command]"
 }
 
