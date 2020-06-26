@@ -80,7 +80,7 @@ def print(message, end="\n"):
 
 def get_conn_by_username(username):
     for c in client_users:
-        if client_users[i] == username:
+        if client_users[c] == username:
             return True, c
     return False, ""
 
