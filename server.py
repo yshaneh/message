@@ -81,13 +81,13 @@ def print(message, end="\n"):
 def get_conn_by_username(username):
     for c in client_users:
         if client_users[i] == username:
-            return c
-    return False
+            return True, c
+    return False, ""
 
 
 def send_message_to_user(username, message, conn):
-    user_conn = get_conn_by_username(username, conn)
-    if user_conn:
+    exist, user_conn = get_conn_by_username(username, conn)
+    if exist:
         send_message(user_conn, message)
 
 def handle_command(message, conn):
@@ -116,8 +116,8 @@ def handle_command(message, conn):
         new_username = params[1]
         success, message, username = users.change_name(user, old_username, new_username)
         send_message(conn, message)
-        tmp = get_conn_by_username(old_username)
-        if tmp:
+        exist, tmp = get_conn_by_username(old_username)
+        if exist:
             client_users[tmp] = username
             if success:
                 send_message_to_user(username, "%s change your name to %s" % (user, username), conn)
@@ -128,8 +128,8 @@ def handle_command(message, conn):
         new_type = params[1]
         success, message = users.change_type(user, username, new_type)
         send_message(conn, message)
-        conn_of_user = get_conn_by_username(username, conn)
-        if conn_of_user:
+        exist, conn_of_user = get_conn_by_username(username, conn)
+        if exist:
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
             if success:
                 send_message_to_user(username, "%s change your type to %s" % (client_users[conn], new_type))
@@ -167,8 +167,8 @@ def handle_command(message, conn):
         success, message = users.kick(user, username)
         if success:
             reason =  "%s kicked %s" % (user, username)
-            c = get_conn_by_username(username)
-            if c:
+            exist, c = get_conn_by_username(username)
+            if exist:
                 remove(c, reason , reason)
             send_message_to_user(username, "%s has kicked you" % user, conn)
         send_message(conn, message)
@@ -182,7 +182,7 @@ def handle_command(message, conn):
         elif paramsnum == 1:
             if params[0] == "-ip":
                 if not users.is_admin(client_users[conn]):
-                    send_message(conn, "<server> permission denied! only admin dan use the -ip option")
+                    send_message(conn, "<server> permission denied! only admin can use the -ip option")
                     return True
                 message = ""
                 for c in client_users:
@@ -190,8 +190,8 @@ def handle_command(message, conn):
                     message += "[%s] %s : %s\n" % (users.users[username]['type'],  username,  client_ip[c])
                 send_message(conn, message)
             else:
-                c = get_conn_by_username[params[0]]
-                if not c:
+                exist, c = get_conn_by_username[params[0]]
+                if not exist:
                     send_message(conn, "<server> invaild useage! type '!help'")
                     return True
                 send_message(conn, "[%s] %s" % (users.users[paramds[0]]['type'], params[0]))
@@ -202,8 +202,8 @@ def handle_command(message, conn):
             except ValueError:
                 send_message(conn, message)
             username = params[1 - index]
-            c = get_conn_by_username[username]
-            if not c:
+            exist, c = get_conn_by_username[username]
+            if not exist:
                 send_message(conn, message)
                 return True
             send_message(conn, "[%s] %s : %s" % (users.users[username]['type'], params[0], client_ip[c]))
