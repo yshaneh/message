@@ -368,28 +368,23 @@ def handle_client(conn, addr):
     send_message(conn, "welcome to my chat room :)\n\n")
     send_to_everybody("%s joined" % client_users[conn], conn)
     while  True:
-        try:
-            message = get_message(conn, addr)
-            if message:
-                if message[-1] == "c":
-                    message = message[:-1]
-                    print("recive command: " + name + message)
-                    if not handle_command(message, conn):
-                        reason = ""
-                        if con in client_users:
-                            reason = "%s disconnected" % client_users[conn]
-                        remove(conn, addr[0] + " disconnected", reason)
-                        return None
-                else:
-                    message = name + message[:-1]
-                print(message)
-                send_to_everybody(message, conn)
-            elif message == '':
-                return None
-
-        except:
-            pass
-
+        message = get_message(conn, addr)
+        if message:
+            if message[-1] == "c":
+                message = message[:-1]
+                print("recive command: " + name + message)
+                if not handle_command(message, conn):
+                    reason = ""
+                    if con in client_users:
+                        reason = "%s disconnected" % client_users[conn]
+                    remove(conn, addr[0] + " disconnected", reason)
+                    return None
+            else:
+                message = name + message[:-1]
+            print(message)
+            send_to_everybody(message, conn)
+        elif message == '':
+            return None
 
 
 def send_message(conn, message):
