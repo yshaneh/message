@@ -165,14 +165,15 @@ def handle_command(message, conn, addr):
         username = params[0]
         success, message = users.kick(user, username)
         if success:
+            reason =  "%s kicked %s" % (user, username)
             c = get_conn_by_username(username)
             if c:
-                remove(c, "%s kicked %s" % (user, client_users[c]))
+                remove(c, reason , reason)
             send_message_to_user(username, "%s has kicked you" % user, conn)
         send_message(conn, message)
     return True
-        
-    
+
+
 
 def sign_up(conn, addr):
     success = False
@@ -209,11 +210,11 @@ def sign_up(conn, addr):
 def check_code(code, public_client_key, conn):
     print("you got code %s from client, please check with the server you got the same code as he sent" % code.decode())
     if input("do you got the same code as client sent? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_client_key):
-        remove(conn, "probably someone listen to you, please check it and try again")
-        
+        remove(conn, "probably someone listen to you, please check it and try again", "")
+
         return False
     return True
-    
+
 def message_with_len(message):
     try:
         message = message.encode()
@@ -221,7 +222,7 @@ def message_with_len(message):
         pass
     str_len = str(len(message))
     return ("0" * (3 - len(str_len))).encode() + str_len.encode() + message
-    
+
 
 def extract_messages(message_and_sign, conn):
     global client_queue
@@ -267,7 +268,7 @@ def login(conn, addr):
     send_message(conn, message)
     client_users[conn] = username
     print("%s logged in successfully as %s" % (addr[0], username))
-    return True  
+    return True
 
 def get_message(conn, addr):
     while True:
@@ -285,7 +286,10 @@ def get_message(conn, addr):
                 warn = "<server> A message was sent from this address that could not be verified! Note that someone may be trying to send messages on your behalf 3"
                 send_message(conn, warn)
         else:
-            remove(conn, addr[0] + " disconnected")
+            reason = ""
+            if conn in client_users:
+                reason = "%s disconnected" % client_users[conn]
+            remove(conn, addr[0] + " disconnected", reason)
             return ''
 
 def handle_client(conn, addr):
@@ -302,10 +306,13 @@ def handle_client(conn, addr):
         print("get public key from %s:%d" % (addr[0], addr[1]))
         clients_keys[conn] = crypt_keys.str_to_public(temp_message[6:])
         if not check_code(temp_message[:6], clients_keys[conn], conn):
-            remove(conn, addr[0] + " couldn't prove it's realy him")
+            remove(conn, addr[0] + " couldn't prove it's realy him", "")
             return None
     else:
-        remove(conn, addr[0] + " disconnected")
+        reason = ""
+        if con in client_users:
+            reason = "%s disconnected" % client_users[conn]
+        remove(conn, addr[0] + " disconnected", reason)
         return None
     clients_address[conn] = addr[0] + ":" + str(addr[1])
     print("key recived")
@@ -313,13 +320,14 @@ def handle_client(conn, addr):
     # accept = input("%s try to connect to server in name '%s', do aprove? ('y' for yes and everythingelse for no): " %  (clients_address[conn], name))
     # if accept.lower() != 'y':
     #     send_message(conn, 'server refuse to connected! n')
-    #     remove(conn, 'you rejected the connection of addres %s' % clients_address[conn]) # extension n to say to the client that connection refused 
+    #     remove(conn, 'you rejected the connection of addres %s' % clients_address[conn], "") # extension n to say to the client that connection refused
     #     return None
     # send_message(conn, 'connected to server y') # extension y to say to the client that connection accepted
     if not login(conn, addr):
         return None
     name = "<" + client_users[conn] + "> "
     send_message(conn, "welcome to my chat room :)\n\n")
+    send_to_everybody(conn, "%s joined" % client_users[conn])
     while  True:
         try:
             message = get_message(conn, addr)
@@ -328,7 +336,10 @@ def handle_client(conn, addr):
                     message = message[:-1]
                     print("recive command: " + name + message)
                     if not handle_command(message, conn, addr):
-                        remove(conn, addr[0] + " disconnected")
+                        reason = ""
+                        if con in client_users:
+                            reason = "%s disconnected" % client_users[conn]
+                        remove(conn, addr[0] + " disconnected", reason)
                         return None
                 else:
                     message = name + message[:-1]
@@ -345,13 +356,13 @@ def handle_client(conn, addr):
 def send_message(conn, message):
     message = crypt_keys.encrypt(message, clients_keys[conn])
     sign_message = crypt_keys.sign(message, private_key[conn])
-    message = message_with_len(message) 
+    message = message_with_len(message)
     sign_message = message_with_len(sign_message)
     conn.send(message + sign_message)
     # nothing = conn.recv(socket_message_size)
     time.sleep(0.1)
 
-def remove(conn, message):
+def remove(conn, message, reason):
     global clients, clients_keys, client_users
     print(message)
     conn.close()
@@ -362,15 +373,16 @@ def remove(conn, message):
     except:
         pass
     if conn in client_users:
+        send_to_everybody(conn, reason)
         users.logout(client_users[conn])
         try:
-            del client_users[conn]
+            client_users.remove(conn)
         except:
             pass
 
 
 
-    
+
 
 def send_to_everybody(message, conn):
     try:
@@ -384,7 +396,7 @@ def send_to_everybody(message, conn):
             try:
                 send_message(c, message)
             except:
-                remove(c, "error")
+                remove(c, "error", "%s disconnected" % client_users[c])
 def server_messages():
     inputs = [sys.stdin]
     while True:
@@ -398,8 +410,8 @@ def server_messages():
 
 
 def main():
-    skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-    skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
+    skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     skt.bind((IP, PORT))
     skt.listen(100)
 
