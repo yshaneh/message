@@ -30,7 +30,7 @@ help = {
 "chkeys": "!chkeys",
 "chname": "!chname [new name]",
 "chtype": "!chtype [username] [new type]",
-"create user": "!create user [username] [password] [(optional) type]",
+"adduser": "!adduser [username] [password] [(optional) type]",
 "mute": "!mute [username]",
 "unmute": "!unmute [username]",
 "kick": "!kick [username]",

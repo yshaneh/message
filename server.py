@@ -52,7 +52,7 @@ clients_keys = {}
 clients_address = {}
 private_key = {}
 public_key = {}
-commands = ["chkeys", "chname", "chtype", "create user", "mute", "unmute", "kick", "users"]
+commands = ["chkeys", "chname", "chtype", "adduser", "mute", "unmute", "kick", "users"]
 client_users = {}
 client_queue = {}
 socket_message_size = 1030
@@ -98,7 +98,7 @@ def handle_command(message, conn):
     params = message[1:]
     paramsnum = len(params)
     if command not in commands:
-        send_message(conn, "<server> invaild command! type '!help'")
+        send_message(conn, "invaild command! type '!help'")
         return True
     if command == "chkeys":
         temp_message = conn.recv(socket_message_size)
@@ -110,7 +110,7 @@ def handle_command(message, conn):
             return False
     elif command == "chname":
         if paramsnum != 2:
-            send_message(conn, "<server> invaild usage! type '!help chname'")
+            send_message(conn, "invaild usage! type '!help chname'")
             return True
         old_username = params[0]
         new_username = params[1]
@@ -123,7 +123,7 @@ def handle_command(message, conn):
                 send_message_to_user(username, "%s change your name to %s" % (user, username), conn)
     elif command == "chtype":
         if paramsnum != 2:
-            send_message(conn, "<server> invaild usage! type '!help'")
+            send_message(conn, "invaild usage! type '!help chtype'")
         username = params[0]
         new_type = params[1]
         success, message = users.change_type(user, username, new_type)
@@ -133,12 +133,12 @@ def handle_command(message, conn):
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
             if success:
                 send_message_to_user(username, "%s change your type to %s" % (client_users[conn], new_type))
-    elif command == "create user":
+    elif command == "adduser":
         if paramsnum == 2:
             params[2] = 'user'
             paramsnum += 1
         if paramsnum != 3:
-            send_message(conn, "<server> invaild usage! type '!help'")
+            send_message(conn, "invaild usage! type '!help adduser'")
             return True
         username = params[0]
         password = params[1]
@@ -147,7 +147,7 @@ def handle_command(message, conn):
         send_message(conn, message)
     elif command == "mute":
         if paramsnum != 1:
-            send_message(conn, "<server> invaild usage! type '!help'")
+            send_message(conn, "invaild usage! type '!help mute'")
             return True
         username = params[0]
         success, message = users.mute(user, username)
@@ -182,7 +182,7 @@ def handle_command(message, conn):
         elif paramsnum == 1:
             if params[0] == "--ip":
                 if not users.is_admin(client_users[conn]):
-                    send_message(conn, "<server> permission denied! only admin can use the --ip option")
+                    send_message(conn, "permission denied! only admin can use the --ip option")
                     return True
                 message = ""
                 for c in client_users:
@@ -196,7 +196,7 @@ def handle_command(message, conn):
                     return True
                 send_message(conn, "[%s] %s" % (users.users[paramds[0]]['type'], params[0]))
         elif paramsnum == 2:
-            message = "<server> invaild useage! type '!help'"
+            message = "invaild useage! type '!help users'"
             try:
                 index = params.index("--ip")
             except ValueError:
@@ -208,7 +208,7 @@ def handle_command(message, conn):
                 return True
             send_message(conn, "[%s] %s : %s" % (users.users[username]['type'], params[0], client_ip[c]))
         else:
-            send_message(conn, "<server> invaild useage! type '!help'")
+            send_message(conn, "invaild useage! type '!help users'")
     return True
 
 
