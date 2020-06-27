@@ -245,13 +245,6 @@ def sign_up(conn, addr):
     success, message = users.login(username, password)
     return True
 
-def check_code(code, public_client_key, conn):
-    print("you got code %s from client, please check with the server you got the same code as he sent" % code.decode())
-    if input("do you got the same code as client sent? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_client_key):
-        remove(conn, "probably someone listen to you, please check it and try again", "")
-
-        return False
-    return True
 
 def message_with_len(message):
     try:
@@ -343,10 +336,7 @@ def handle_client(conn, addr):
     temp_message = conn.recv(socket_message_size)
     if temp_message:
         print("get public key from %s:%d" % (addr[0], addr[1]))
-        clients_keys[conn] = crypt_keys.str_to_public(temp_message[6:])
-        if not check_code(temp_message[:6], clients_keys[conn], conn):
-            remove(conn, addr[0] + " couldn't prove it's realy him", "")
-            return None
+        clients_keys[conn] = crypt_keys.str_to_public(temp_message)
     else:
         reason = ""
         if conn in client_users:
