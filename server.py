@@ -79,8 +79,8 @@ def print(message, end="\n"):
     sys.stdout.flush()
 
 def get_conn_by_username(username):
-    for c in client_users:
-        if client_users[c] == username:
+    for c,name in touple((client_users.keys(), client_users.values())):
+        if name == username:
             return True, c
     return False, ""
 
