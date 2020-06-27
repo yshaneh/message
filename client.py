@@ -30,7 +30,7 @@ help = {
 "chkeys": "!chkeys",
 "chname": "!chname [new name]",
 "chtype": "!chtype [username] [new type]",
-"create user": "!create user [username] [password] [(optional) type]",
+"adduser": "!adduser [username] [password] [(optional) type]",
 "mute": "!mute [username]",
 "unmute": "!unmute [username]",
 "kick": "!kick [username]",
@@ -342,11 +342,9 @@ message = skt.recv(socket_message_size)
 public_server = crypt_keys.str_to_public(message[6:])
 print2("key received from server")
 check_code(message[:6], public_server)
-print2("send your public key and code to server")
-code = crypt_keys.generate_code(public_key)
-skt.send(code + str_public)
+print2("send your public key to server")
+skt.send(str_public)
 print2("key is sent to the server\n\n")
-print2("send code %s to server, please verify the server got the same code" % code.decode())
 # send_message(input("enter your name: "), skt, public_server, private_key)
 # message = get_message(skt)
 # print(message[:-1])
