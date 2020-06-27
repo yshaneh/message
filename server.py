@@ -191,6 +191,7 @@ def handle_command(message, conn):
                 send_message(conn, message)
             else:
                 exist, c = get_conn_by_username([params[0]])
+                print("'%s'" % params[0])
                 if exist:
                     send_message(conn, "[%s] %s" % (users.users[params[0]]['type'], params[0]))
                 else:
@@ -200,7 +201,7 @@ def handle_command(message, conn):
                             message = "user %s does not exsit!" % params[0]
                         else:
                             message = "user %s is not connect to server" % params[0]
-                            send_message(conn, message)
+                    send_message(conn, message)
                     return True
         elif paramsnum == 2:
             message = "invaild useage! type '!help users'"
