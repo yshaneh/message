@@ -18,25 +18,11 @@ import threading
 found_ips = []
 threads = {}
 checked = 0
-commands = ["help", "chkeys"]
-not_handle_commands = ["mute", "unmute", "chname", "chtype", "creat user", "kick", "users"]
 connect = False
 user_message = ""
 queue = ""
 socket_message_size = 1030
 wrting = False
-
-help = {
-"chkeys": "!chkeys",
-"chname": "!chname [new name]",
-"chtype": "!chtype [username] [new type]",
-"adduser": "!adduser [username] [password] [(optional) type]",
-"mute": "!mute [username]",
-"unmute": "!unmute [username]",
-"kick": "!kick [username]",
-"users": "!users [(optional flag) --ip] [(optional) username]",
-"help": "!help [(optional) command]"
-}
 
 def print2(message, end="\n"):
     print(message, end=end)
@@ -62,30 +48,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def handle_commands(message):
     global private_key, public_key, str_public
-    message = message.split(" ")
-    command = message[0]
-    params = message[1:]
-    paramnum = len(params)
-    if command not in commands:
-        if command in not_handle_commands:
-            return None
-        print2("Invalid command! type '!help'")
-        return None
-    if command == "help":
-        if paramnum == 0:
-            print2("\ncommands are: \n")
-            for i in commands:
-                print2(i)
-            for i in not_handle_commands:
-                print2(i)
-        elif paramnum == 1:
-            if params[0] in help:
-                print2(help[params[0]])
-            else:
-                print2("command %s not found" % params[0])
-        else:
-            print("invaild useage! type '!help help'")
-    elif command == "chkeys":
+    if command == "chkeys":
         print2("\ngenerate new keys...")
         private_key, public_key = crypt_keys.get_keys()
         str_public = crypt_keys.public_to_str(public_key)

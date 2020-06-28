@@ -52,7 +52,7 @@ clients_keys = {}
 clients_address = {}
 private_key = {}
 public_key = {}
-commands = ["chkeys", "chname", "chtype", "adduser", "mute", "unmute", "kick", "users"]
+commands = ["chkeys", "chname", "chtype", "adduser", "mute", "unmute", "kick", "users", "help"]
 client_users = {}
 client_queue = {}
 socket_message_size = 1030
@@ -61,6 +61,17 @@ writing = False
 original_input = input
 original_print = print
 client_ip = {}
+help = {
+"chkeys": "!chkeys",
+"chname": "!chname [new name]",
+"chtype": "!chtype [username] [new type]",
+"adduser": "!adduser [username] [password] [(optional) type]",
+"mute": "!mute [username]",
+"unmute": "!unmute [username]",
+"kick": "!kick [username]",
+"users": "!users [(optional flag) --ip] [(optional) username]",
+"help": "!help [(optional) command]"
+}
 
 
 def input(message):
@@ -100,7 +111,17 @@ def handle_command(message, conn):
     if command not in commands:
         send_message(conn, "invaild command! type '!help'")
         return True
-    if command == "chkeys":
+    if command == "help":
+        message = "invaild useage! type '!help help'"
+        if paramsnum == 0:
+            mesage = "\n".join(commands)
+        elif paramsnum = 1:
+            if params[0] in help:
+                message = help[params[0]]
+            else:
+                message = "command '%s' is not defin" % params[0]
+        send_message(conn, message)
+    elif command == "chkeys":
         temp_message = conn.recv(socket_message_size)
         if temp_message:
                 print("get public key from %s" % client_ip[conn])
