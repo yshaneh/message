@@ -460,7 +460,7 @@ def server_messages():
         server_message = ""
         for inp in read:
             server_message = sys.stdin.readline().rstrip()
-            print("\033[1A\033[K<you>%s" % server_message)
+            print("\033[1A\033[K<you> %s" % server_message)
             server_message = "<server> " + server_message
             send_to_everybody(server_message, None)
 
