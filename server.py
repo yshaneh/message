@@ -266,7 +266,7 @@ def handle_command(message, conn):
         message = "invalid usage! type '!help ban'"
         if paramsnum == 1:
             if check_ip(ip):
-                if users.is_admin():
+                if users.is_admin(user):
                     blacklist.append(ip)
                     message = "ip '%s' banned successfully" % ip
             else:
@@ -409,8 +409,8 @@ def handle_client(conn, addr):
     client_ip[conn] = addr[0]
     code = crypt_keys.generate_code(public_key[conn])
     if addr[0] in blacklist:
-        remove(conn, "ip '%s' is banned" % addr[0])
         conn.send(b'you are ban from this serverq')
+        remove(conn, "banned ip '%s' tried to connect and blocked" % addr[0])
         return
     else:
         conn.send(b'welcome to my message server\n\ne')
@@ -442,7 +442,7 @@ def handle_client(conn, addr):
     name = "<" + client_users[conn] + "> "
     send_message(conn, "welcome to my chat room :)\n\n")
     send_to_everybody("%s joined" % client_users[conn], conn)
-    while  True:
+    while  True and conn in clients:
         message = get_message(conn, addr)
         if message:
             if message[-1] == "c":
@@ -477,17 +477,12 @@ def remove(conn, message, reason=""):
     conn.close()
     if conn in clients:
         clients.remove(conn)
-    try:
-        del clients_keys[conn]
-    except:
-        pass
+    if conn in clients_keys:
+        clients_keys.pop(conn)
     if conn in client_users:
-        send_to_everybody(reason, conn)
         users.logout(client_users[conn])
-        try:
-            client_users.remove(conn)
-        except:
-            pass
+        client_users.pop(conn)
+        send_to_everybody(reason, None)
 
 def send_to_everybody(message, conn):
     try:

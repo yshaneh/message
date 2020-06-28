@@ -304,10 +304,13 @@ def main():
     connect = True
 
     message = skt.recv(1024).decode()
-    if not message or message[-1] == "q":
+    if not message:
         print("server disconnected")
         return
     print(message[:-1])
+    if message[-1] == "q":
+        print("server disconnected")
+        return
     print2("get server public key")
     message = skt.recv(socket_message_size)
     public_server = crypt_keys.str_to_public(message[6:])
