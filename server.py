@@ -83,9 +83,12 @@ def input(message):
     writing = False
     return result
 
-def print(message, end="\n"):
+def print(message, end="\n", you=True):
     while writing:
         time.sleep(1)
+    if you:
+        message = "\r     \r" + message + "\n<you> "
+        end=""
     original_print(message, end=end)
     sys.stdout.flush()
 
@@ -451,6 +454,7 @@ def send_to_everybody(message, conn):
             except:
                 remove(c, "error", "%s disconnected" % client_users[c])
 def server_messages():
+    print("<you>", end=" ")
     inputs = [sys.stdin]
     while True:
         read, write, error = select.select(inputs, [], [])
@@ -460,6 +464,7 @@ def server_messages():
             print("\033[1A\033[K<you>%s" % server_message)
             server_message = "<server> " + server_message
             send_to_everybody(server_message, None)
+            print("<you>" end=" ")
 
 
 def main():
