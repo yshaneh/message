@@ -409,11 +409,11 @@ def handle_client(conn, addr):
     client_ip[conn] = addr[0]
     code = crypt_keys.generate_code(public_key[conn])
     if addr[0] in blacklist:
-        remove(conn, "ip '%s' is banned" % addr[0], "you are banned from this server\n")
+        remove(conn, "ip '%s' is banned" % addr[0])
+        conn.send(b'you are ban from this serverq')
         return
     else:
-        conn.send(b'qwe')
-        conn.send(b'qwe')
+        conn.send(b'welcome to my message server\n\ne')
     print("send public key  and code to %s:%d" % (addr[0], addr[1]))
     conn.send(code + crypt_keys.public_to_str(public_key[conn]))
     print("key is sent")
@@ -471,7 +471,7 @@ def send_message(conn, message):
     # nothing = conn.recv(socket_message_size)
     time.sleep(0.1)
 
-def remove(conn, message, reason):
+def remove(conn, message, reason=""):
     global clients, clients_keys, client_users
     print(message)
     conn.close()

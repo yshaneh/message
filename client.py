@@ -303,9 +303,17 @@ def main():
     inputs = [skt, sys.stdin]
     connect = True
 
+    message = skt.recv(1024).decode()
+    if not message or message[-1] == "q":
+        print("server disconnected")
+        return
+    print(message[:-1])
     print2("get server public key")
     message = skt.recv(socket_message_size)
     public_server = crypt_keys.str_to_public(message[6:])
+    if not public_server:
+        print("server disconnected")
+        return
     print2("key received from server")
     check_code(message[:6], public_server)
     print2("send your public key to server")
