@@ -190,8 +190,8 @@ def handle_command(message, conn):
             reason =  "%s kicked %s" % (user, username)
             exist, c = get_conn_by_username(username)
             if exist:
+                send_message_to_user(username, "%s has kicked you" % user)
                 remove(c, reason , reason)
-            send_message_to_user(username, "%s has kicked you" % user)
         send_message(conn, message)
     elif command == "users":
         if paramsnum == 0:
