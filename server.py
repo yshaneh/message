@@ -191,7 +191,6 @@ def handle_command(message, conn):
                 send_message(conn, message)
             else:
                 exist, c = get_conn_by_username(params[0])
-                print("'%s'" % params[0])
                 if exist:
                     send_message(conn, "[%s] %s" % (users.users[params[0]]['type'], params[0]))
                 else:
@@ -384,8 +383,8 @@ def handle_client(conn, addr):
                     return None
             else:
                 message = name + message[:-1]
-            print(message)
-            send_to_everybody(message, conn)
+                print(message)
+                send_to_everybody(message, conn)
         elif message == '':
             return None
 
