@@ -464,7 +464,6 @@ def server_messages():
             print("\033[1A\033[K<you>%s" % server_message)
             server_message = "<server> " + server_message
             send_to_everybody(server_message, None)
-            print("<you>", end=" ")
 
 
 def main():
