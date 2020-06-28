@@ -85,8 +85,8 @@ def get_conn_by_username(username):
     return False, ""
 
 
-def send_message_to_user(username, message, conn):
-    exist, user_conn = get_conn_by_username(username, conn)
+def send_message_to_user(username, message):
+    exist, user_conn = get_conn_by_username(username)
     if exist:
         send_message(user_conn, message)
 
@@ -120,7 +120,7 @@ def handle_command(message, conn):
         if exist:
             client_users[tmp] = username
             if success:
-                send_message_to_user(username, "%s change your name to %s" % (user, username), conn)
+                send_message_to_user(username, "%s change your name to %s" % (user, username))
     elif command == "chtype":
         if paramsnum != 2:
             send_message(conn, "invaild usage! type '!help chtype'")
@@ -128,7 +128,7 @@ def handle_command(message, conn):
         new_type = params[1]
         success, message = users.change_type(user, username, new_type)
         send_message(conn, message)
-        exist, conn_of_user = get_conn_by_username(username, conn)
+        exist, conn_of_user = get_conn_by_username(username)
         if exist:
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
             if success:
@@ -153,14 +153,14 @@ def handle_command(message, conn):
         success, message = users.mute(user, username)
         if success:
             users_muted[username] = True
-            send_message_to_user(username, "%s has muted you" % user, conn)
+            send_message_to_user(username, "%s has muted you" % user)
         send_message(conn, message)
     elif command == "unmute":
         username = params[0]
         success, message = users.unmute(user, username)
         if success:
             users_muted[username] = False
-            send_message_to_user(username, "%s has unmuted you" % user, conn)
+            send_message_to_user(username, "%s has unmuted you" % user)
         send_message(conn, message)
     elif command == "kick":
         username = params[0]
@@ -170,7 +170,7 @@ def handle_command(message, conn):
             exist, c = get_conn_by_username(username)
             if exist:
                 remove(c, reason , reason)
-            send_message_to_user(username, "%s has kicked you" % user, conn)
+            send_message_to_user(username, "%s has kicked you" % user)
         send_message(conn, message)
     elif command == "users":
         if paramsnum == 0:
