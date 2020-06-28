@@ -454,7 +454,6 @@ def send_to_everybody(message, conn):
             except:
                 remove(c, "error", "%s disconnected" % client_users[c])
 def server_messages():
-    print("<you>", end=" ")
     inputs = [sys.stdin]
     while True:
         read, write, error = select.select(inputs, [], [])
