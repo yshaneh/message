@@ -115,7 +115,7 @@ def handle_command(message, conn):
         message = "invaild useage! type '!help help'"
         if paramsnum == 0:
             mesage = "\n".join(commands)
-        elif paramsnum = 1:
+        elif paramsnum == 1:
             if params[0] in help:
                 message = help[params[0]]
             else:
