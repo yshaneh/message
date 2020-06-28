@@ -186,13 +186,13 @@ def handle_command(message, conn):
     elif command == "kick":
         username = params[0]
         success, message = users.kick(user, username)
+        send_message(conn, message)
         if success:
             reason =  "%s kicked %s" % (user, username)
             exist, c = get_conn_by_username(username)
             if exist:
                 send_message_to_user(username, "%s has kicked you" % user)
                 remove(c, reason , reason)
-        send_message(conn, message)
     elif command == "users":
         if paramsnum == 0:
             message = ""
