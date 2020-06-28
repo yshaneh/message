@@ -22,7 +22,8 @@ connect = False
 user_message = ""
 queue = ""
 socket_message_size = 1030
-wrting = False
+writing = False
+skt, public_server, private_key, public_key, str_public, IP, PORT = None
 
 def print2(message, end="\n"):
     print(message, end=end)
@@ -48,6 +49,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def handle_commands(message):
     global private_key, public_key, str_public
+    command = message.split(" ")[0]
     if command == "chkeys":
         print2("\ngenerate new keys...")
         private_key, public_key = crypt_keys.get_keys()
@@ -272,95 +274,97 @@ def check_code(code, public_server):
 
 
 
-
-IP = input("inser the server ip (or nothing for search in your network): ")
-PORT = -1
-while PORT < 0 or PORT > 65535:
-    try:
-        PORT = input("insert the port number: (deafult 5555): ")
-        if PORT == "":
-            PORT = 5555
-        else:
-            PORT = int(PORT)
-        if PORT < 0:
-            print2("too low! range is 0 to 65535 ")
-    except:
-        print2("illegal choice! try again...")
-        PORT = -1
-    if PORT > 65535:
-        print2("too high! range is 0 to 65535")
-if IP == '':
-    search_on_network()
-private_key, public_key = crypt_keys.get_keys()
-str_public = crypt_keys.public_to_str(public_key)
-
-skt = socket.socket()
-skt.connect((IP, PORT))
-
-inputs = [skt, sys.stdin]
-connect = True
-
-print2("get server public key")
-message = skt.recv(socket_message_size)
-public_server = crypt_keys.str_to_public(message[6:])
-print2("key received from server")
-check_code(message[:6], public_server)
-print2("send your public key to server")
-skt.send(str_public)
-print2("key is sent to the server\n\n")
-# send_message(input("enter your name: "), skt, public_server, private_key)
-# message = get_message(skt)
-# print(message[:-1])
-# if message[-1] == 'n':
-#     connect = False
-
-
-login(skt, public_server, private_key)
-
-print2("<you> ", end="")
-while True and connect:
-    read, write, error = select.select(inputs, [], [])
-    message = ""
-    for inp in read:
-        if inp == skt:
-            message = get_message(inp)
-            if message == '':
-                disconnect()
-                break
-            elif message == 1:
-                continue
+def main():
+    global writing, public_server, private_key, public_key, str_public, IP, PORT
+    IP = input("inser the server ip (or nothing for search in your network): ")
+    PORT = -1
+    while PORT < 0 or PORT > 65535:
+        try:
+            PORT = input("insert the port number: (deafult 5555): ")
+            if PORT == "":
+                PORT = 5555
             else:
-                print2("\r" + (" " * 100) + "\r"  + message)
-                print2("<you> ", end="")
+                PORT = int(PORT)
+            if PORT < 0:
+                print2("too low! range is 0 to 65535 ")
+        except:
+            print2("illegal choice! try again...")
+            PORT = -1
+        if PORT > 65535:
+            print2("too high! range is 0 to 65535")
+    if IP == '':
+        search_on_network()
+    private_key, public_key = crypt_keys.get_keys()
+    str_public = crypt_keys.public_to_str(public_key)
 
-        else:
-            while wrting:
+    skt = socket.socket()
+    skt.connect((IP, PORT))
+
+    inputs = [skt, sys.stdin]
+    connect = True
+
+    print2("get server public key")
+    message = skt.recv(socket_message_size)
+    public_server = crypt_keys.str_to_public(message[6:])
+    print2("key received from server")
+    check_code(message[:6], public_server)
+    print2("send your public key to server")
+    skt.send(str_public)
+    print2("key is sent to the server\n\n")
+    # send_message(input("enter your name: "), skt, public_server, private_key)
+    # message = get_message(skt)
+    # print(message[:-1])
+    # if message[-1] == 'n':
+    #     connect = False
+    login(skt, public_server, private_key)
+    print2("<you> ", end="")
+    while True and connect:
+        read, write, error = select.select(inputs, [], [])
+        message = ""
+        for inp in read:
+            if inp == skt:
+                message = get_message(inp)
+                if message == '':
+                    disconnect()
+                    break
+                elif message == 1:
+                    continue
+                else:
+                    print2("\r" + (" " * 100) + "\r"  + message)
+                    print2("<you> ", end="")
+            else:
+                while writing:
+                    time.sleep(0.5)
+                writing = True
+                message = sys.stdin.readline().rstrip()
+                end_of_message = "q"
+                command = ""
+                start_of_message = "<you> "
+                if len(message) >= 1:
+                    if message[0] == "!":
+                        start_of_message = "<command> "
+                        end_of_message = "c"
+                        message = message[1:]
+                        command = message
+                print2("\033[1A\033[K" + start_of_message + message)
+                message += end_of_message
+                send_message(message, skt, public_server, private_key)
+                if command != "":
+                    handle_commands(command)
                 time.sleep(0.5)
-            wrting = True
-            message = sys.stdin.readline().rstrip()
-            end_of_message = "q"
-            command = ""
-            start_of_message = "<you> "
-            if len(message) >= 1:
-                if message[0] == "!":
-                    start_of_message = "<command> "
-                    end_of_message = "c"
-                    message = message[1:]
-                    command = message
-            print2("\033[1A\033[K" + start_of_message + message)
-            message += end_of_message
-            send_message(message, skt, public_server, private_key)
-            if command != "":
-                handle_commands(command)
-            time.sleep(0.5)
-            print2("<you> ", end="")
-            wrting = False
+                print2("<you> ", end="")
+                writing = False
 
 
-            # get_message_from_user(skt)    # if work than need only this to get message from user!
+                # get_message_from_user(skt)    # if work than need only this to get message from user!
 
 
-# user_thread = threading.Thread(target=get_message_from_user, args=(skt,))
-# server_thread = threading.Thread(target=get_message_from_server, args=(skt,))
-# user_thread.start()
-# server_thread.start()
+    # user_thread = threading.Thread(target=get_message_from_user, args=(skt,))
+    # server_thread = threading.Thread(target=get_message_from_server, args=(skt,))
+    # user_thread.start()
+    # server_thread.start()
+
+
+
+if __name__ == "__main__":
+    main()
