@@ -109,17 +109,17 @@ def handle_command(message, conn):
     params = message[1:]
     paramsnum = len(params)
     if command not in commands:
-        send_message(conn, "invaild command! type '!help'")
+        send_message(conn, "invalid command! type '!help'")
         return True
     if command == "help":
-        message = "invaild useage! type '!help help'"
+        message = "invalid usage! type '!help help'"
         if paramsnum == 0:
-            mesage = "\n".join(commands)
+            message = "\n".join(commands)
         elif paramsnum == 1:
             if params[0] in help:
                 message = help[params[0]]
             else:
-                message = "command '%s' is not defin" % params[0]
+                message = "command '%s' is not defined" % params[0]
         send_message(conn, message)
     elif command == "chkeys":
         temp_message = conn.recv(socket_message_size)
@@ -131,7 +131,7 @@ def handle_command(message, conn):
             return False
     elif command == "chname":
         if paramsnum != 2:
-            send_message(conn, "invaild usage! type '!help chname'")
+            send_message(conn, "invalid usage! type '!help chname'")
             return True
         old_username = params[0]
         new_username = params[1]
@@ -144,7 +144,7 @@ def handle_command(message, conn):
                 send_message_to_user(username, "%s change your name to %s" % (user, username))
     elif command == "chtype":
         if paramsnum != 2:
-            send_message(conn, "invaild usage! type '!help chtype'")
+            send_message(conn, "invalid usage! type '!help chtype'")
         username = params[0]
         new_type = params[1]
         success, message = users.change_type(user, username, new_type)
@@ -159,7 +159,7 @@ def handle_command(message, conn):
             params[2] = 'user'
             paramsnum += 1
         if paramsnum != 3:
-            send_message(conn, "invaild usage! type '!help adduser'")
+            send_message(conn, "invalid usage! type '!help adduser'")
             return True
         username = params[0]
         password = params[1]
@@ -168,7 +168,7 @@ def handle_command(message, conn):
         send_message(conn, message)
     elif command == "mute":
         if paramsnum != 1:
-            send_message(conn, "invaild usage! type '!help mute'")
+            send_message(conn, "invalid usage! type '!help mute'")
             return True
         username = params[0]
         success, message = users.mute(user, username)
@@ -215,7 +215,7 @@ def handle_command(message, conn):
                 if exist:
                     send_message(conn, "[%s] %s" % (users.users[params[0]]['type'], params[0]))
                 else:
-                    message = "invavild useage! type '!help users'"
+                    message = "invavild usage! type '!help users'"
                     if params[0][0] != "-":
                         if not users.user_exist(params[0]):
                             message = "user %s does not exsit!" % params[0]
@@ -224,7 +224,7 @@ def handle_command(message, conn):
                     send_message(conn, message)
                     return True
         elif paramsnum == 2:
-            message = "invaild useage! type '!help users'"
+            message = "invalid usage! type '!help users'"
             try:
                 index = params.index("--ip")
             except ValueError:
@@ -241,7 +241,7 @@ def handle_command(message, conn):
                 return True
             send_message(conn, "[%s] %s : %s" % (users.users[username]['type'], username, client_ip[c]))
         else:
-            send_message(conn, "invaild useage! type '!help users'")
+            send_message(conn, "invalid usage! type '!help users'")
     return True
 
 

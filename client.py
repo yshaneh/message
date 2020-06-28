@@ -84,19 +84,19 @@ def choose_ip(found_ips):
     for i in range(len(found_ips)):
         print2("%d: %s" % (i+1, found_ips[i]))
     print2("\n\n")
-    choise = -1
-    while choise < 1 or choise > number_of_options:
-        choise = input("choose ip of the above (enter the number of his place on the list): ")
+    choice = -1
+    while choice < 1 or choice > number_of_options:
+        choice = input("choose ip of the above (enter the number of his place on the list): ")
         try:
-            choise = int(choise)
-            if choise < 1:
+            choice = int(choice)
+            if choice < 1:
                 print2("illigal, number is too low!")
-            elif choise > len(found_ips):
+            elif choice > len(found_ips):
                 print2("illigal, number is too high!")
         except:
             print2("illigal input! you need to insert number")
-            choise = -1
-    IP = found_ips[choise - 1]
+            choice = -1
+    IP = found_ips[choice - 1]
 
 
 def get_ip():
@@ -285,7 +285,7 @@ while PORT < 0 or PORT > 65535:
         if PORT < 0:
             print2("too low! range is 0 to 65535 ")
     except:
-        print2("illigal choise! try again...")
+        print2("illigal choice! try again...")
         PORT = -1
     if PORT > 65535:
         print2("too high! range is 0 to 65535")
