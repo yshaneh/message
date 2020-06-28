@@ -71,10 +71,11 @@ help = {
 "unmute": "!unmute [username]",
 "kick": "!kick [username]",
 "users": "!users [(optional flag) --ip] [(optional) username]",
-"ban: !ban [ip]",
-"unban: !unban [ip]",
+"ban": "!ban [ip]",
+"unban": "!unban [ip]",
 "help": "!help [(optional) command]"
 }
+skt = None
 
 
 def input(message):
@@ -265,9 +266,9 @@ def handle_command(message, conn):
         message = "invalid usage! type '!help ban'"
         if paramsnum == 1:
             if check_ip(ip):
-                if users.is_admin()
-                blacklist.append(ip)
-                message = "ip '%s' banned successfully" % ip
+                if users.is_admin():
+                    blacklist.append(ip)
+                    message = "ip '%s' banned successfully" % ip
             else:
                 message  = "invalid ip '%s'" % ip
         send_message(conn, message)
@@ -449,7 +450,7 @@ def handle_client(conn, addr):
                 print("recive command: " + name + message)
                 if not handle_command(message, conn):
                     reason = ""
-                    if con in client_users:
+                    if conn in client_users:
                         reason = "%s disconnected" % client_users[conn]
                     remove(conn, addr[0] + " disconnected", reason)
                     return None
@@ -514,6 +515,7 @@ def server_messages():
 
 
 def main():
+    global skt
     skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     skt.bind((IP, PORT))
