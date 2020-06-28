@@ -23,7 +23,7 @@ user_message = ""
 queue = ""
 socket_message_size = 1030
 writing = False
-skt, public_server, private_key, public_key, str_public, IP, PORT = None
+skt, public_server, private_key, public_key, str_public, IP, PORT = None, None, None, None, None, None, None
 
 def print2(message, end="\n"):
     print(message, end=end)

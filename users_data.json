@@ -7,9 +7,9 @@
     "is_logged": false
   },
   "user": {
-    "start_salt": "-iCSYJBfSQqpKHtJeCrdgA==",
-    "end_salt": "aNB-N1vNSMWQqVkKX88x-A==",
-    "password": "9d41f9168af5e7a1c80c3aaa588605eb2180400a80df3b5cfb3f6889428a599e0843b4f8d538a2de3cda566f8e3e27a24af474b6d4c25aa3235300acbfdabddc",
+    "start_salt": "6J9FfjGUTqe6iHHOQTArGg==",
+    "end_salt": "0s8wnKaZQhSAHfrIfhH2fg==",
+    "password": "f39b687cc1eb6a24f11160a4fd004de19eddf4f833da93dc045e9c9775ceedcdd4bb5cb2f2209bc7c933d6f70c8d2825c3ba0cd7c33df2904aa913ebd2f17495",
     "type": "user",
     "is_logged": false
   }
