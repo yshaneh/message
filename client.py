@@ -90,11 +90,11 @@ def choose_ip(found_ips):
         try:
             choice = int(choice)
             if choice < 1:
-                print2("illigal, number is too low!")
+                print2("illegal, number is too low!")
             elif choice > len(found_ips):
-                print2("illigal, number is too high!")
+                print2("illegal, number is too high!")
         except:
-            print2("illigal input! you need to insert number")
+            print2("illegal input! you need to insert number")
             choice = -1
     IP = found_ips[choice - 1]
 
@@ -285,7 +285,7 @@ while PORT < 0 or PORT > 65535:
         if PORT < 0:
             print2("too low! range is 0 to 65535 ")
     except:
-        print2("illigal choice! try again...")
+        print2("illegal choice! try again...")
         PORT = -1
     if PORT > 65535:
         print2("too high! range is 0 to 65535")
