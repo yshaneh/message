@@ -305,11 +305,11 @@ def main():
 
     message = skt.recv(1024).decode()
     if not message:
-        print("server disconnected")
+        disconnect()
         return
     print(message[:-1])
     if message[-1] == "q":
-        print("server disconnected")
+        disconnect()
         return
     print2("get server public key")
     message = skt.recv(socket_message_size)
