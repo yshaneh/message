@@ -52,7 +52,8 @@ clients_keys = {}
 clients_address = {}
 private_key = {}
 public_key = {}
-commands = ["chkeys", "chname", "chtype", "adduser", "mute", "unmute", "kick", "users", "help"]
+commands = ["chkeys", "chname", "chtype", "adduser", "mute", "unmute", "kick", "users", "ban", "unban", "help"]
+blacklist = []
 client_users = {}
 client_queue = {}
 socket_message_size = 1030
@@ -70,6 +71,8 @@ help = {
 "unmute": "!unmute [username]",
 "kick": "!kick [username]",
 "users": "!users [(optional flag) --ip] [(optional) username]",
+"ban: !ban [ip]",
+"unban: !unban [ip]",
 "help": "!help [(optional) command]"
 }
 
@@ -103,6 +106,15 @@ def send_message_to_user(username, message):
     exist, user_conn = get_conn_by_username(username)
     if exist:
         send_message(user_conn, message)
+
+def check_ip(ip):
+    try:
+        ip = [int(i) for i in ip.split(".") if 0 <= int(i) <= 255]
+    except ValueError:
+        return False
+    return len(ip) == 4
+
+
 
 def handle_command(message, conn):
     global client_users
@@ -245,6 +257,36 @@ def handle_command(message, conn):
             send_message(conn, "[%s] %s : %s" % (users.users[username]['type'], username, client_ip[c]))
         else:
             send_message(conn, "invalid usage! type '!help users'")
+    elif command == "ban":
+        if not users.is_admin(user):
+            send_message(conn, "permission denied! only admin can ban")
+            return True
+        ip = params[0]
+        message = "invalid usage! type '!help ban'"
+        if paramsnum == 1:
+            if check_ip(ip):
+                if users.is_admin()
+                blacklist.append(ip)
+                message = "ip '%s' banned successfully" % ip
+            else:
+                message  = "invalid ip '%s'" % ip
+        send_message(conn, message)
+    elif command == "unban":
+        if not users.is_admin(user):
+            send_message(conn, "permission denied! only admin can unban")
+            return True
+        ip = params[0]
+        message = "invalid usage! type '!help ban'"
+        if paramsnum == 1:
+            if check_ip(ip):
+                if ip in blacklist:
+                    blacklist.remove(ip)
+                    message = "ip '%s' unbanned successfully" % ip
+                else:
+                    message = "ip '%s' is not banned!" % ip
+            else:
+                message = "invalid ip '%s'" % ip
+        send_message(conn, message)
     return True
 
 
@@ -365,6 +407,12 @@ def handle_client(conn, addr):
     client_queue[conn] = ""
     client_ip[conn] = addr[0]
     code = crypt_keys.generate_code(public_key[conn])
+    if addr[0] in blacklist:
+        remove(conn, "ip '%s' is banned" % addr[0], "you are banned from this server\n")
+        return
+    else:
+        conn.send(b'qwe')
+        conn.send(b'qwe')
     print("send public key  and code to %s:%d" % (addr[0], addr[1]))
     conn.send(code + crypt_keys.public_to_str(public_key[conn]))
     print("key is sent")
