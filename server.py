@@ -39,7 +39,7 @@ def get_ip():
     s = socket.socket()
     s.settimeout(10)
     try:
-        s.connect(('8.8.8.8', 8080))
+        s.connect(('8.8.8.8', 53))
         return s.getsockname()[0]
     except:
         return '0.0.0.0'
