@@ -275,7 +275,7 @@ def check_code(code, public_server):
 
 
 def main():
-    global writing, public_server, private_key, public_key, str_public, IP, PORT
+    global writing, public_server, private_key, public_key, str_public, IP, PORT, skt
     IP = input("inser the server ip (or nothing for search in your network): ")
     PORT = -1
     while PORT < 0 or PORT > 65535:
