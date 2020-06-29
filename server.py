@@ -245,6 +245,10 @@ def handle_command(message, conn):
                 index = params.index("--ip")
             except ValueError:
                 send_message(conn, message)
+                return True
+            if not users.is_admin(user):
+                send_message(conn, "permission denied! only admin can use the --ip option")
+                return True
             username = params[1 - index]
             exist, c = get_conn_by_username(username)
             if not exist:
