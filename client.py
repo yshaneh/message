@@ -10,6 +10,8 @@ import _thread
 import random
 import string
 import threading
+import datetime
+import math
 #import getch
 
 
@@ -275,7 +277,7 @@ def check_code(code, public_server):
 
 
 def main():
-    global writing, public_server, private_key, public_key, str_public, IP, PORT, skt
+    global writing, public_server, private_key, public_key, str_public, IP, PORT, skt, connect
     IP = input("inser the server ip (or nothing for search in your network): ")
     PORT = -1
     while PORT < 0 or PORT > 65535:
@@ -341,7 +343,8 @@ def main():
                 elif message == 1:
                     continue
                 else:
-                    print2("\r" + (" " * 100) + "\r"  + message)
+                    now = datetime.datetime.now()
+                    print2("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)),message))
                     print2("<you> ", end="")
             else:
                 while writing:
