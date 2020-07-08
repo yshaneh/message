@@ -1,6 +1,6 @@
 import json
 import os
-from Crypto.Hash import SHA512
+from hashlib import sha512 as SHA512
 import uuid
 import base64
 import re
