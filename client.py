@@ -274,10 +274,33 @@ def check_code(code, public_server):
 #         print2("\r" + (" " * ( len(user_message) + 10)), end=message) # clean user message and prinr message from server
 #         print2(user_message, end="") # return the user message back to the screen
 
-
+def read_input():
+    global writing
+    while connect:
+        while writing:
+            time.sleep(0.5)
+        writing = True
+        message = sys.stdin.readline().rstrip()
+        end_of_message = "q"
+        command = ""
+        start_of_message = "<you> "
+        if len(message) >= 1:
+            if message[0] == "!":
+                start_of_message = "<command> "
+                end_of_message = "c"
+                message = message[1:]
+                command = message
+            print2("\033[1A\033[K" + start_of_message + message)
+            message += end_of_message
+            send_message(message, skt, public_server, private_key)
+            if command != "":
+                handle_commands(command)
+            time.sleep(0.5)
+            print2("<you> ", end="")
+            writing = False
 
 def main():
-    global writing, public_server, private_key, public_key, str_public, IP, PORT, skt, connect
+    global public_server, private_key, public_key, str_public, IP, PORT, skt, connect
     IP = input("inser the server ip (or nothing for search in your network): ")
     PORT = -1
     while PORT < 0 or PORT > 65535:
@@ -302,7 +325,7 @@ def main():
     skt = socket.socket()
     skt.connect((IP, PORT))
 
-    inputs = [skt, sys.stdin]
+    inputs = [skt]
     connect = True
 
     message = skt.recv(1024).decode()
@@ -315,6 +338,7 @@ def main():
         return
     print2("get server public key")
     message = skt.recv(socket_message_size)
+    print(message)
     public_server = crypt_keys.str_to_public(message[6:])
     if not public_server:
         print("server disconnected")
@@ -331,43 +355,22 @@ def main():
     #     connect = False
     login(skt, public_server, private_key)
     print2("<you> ", end="")
+    _thread.start_new_thread(read_input, ())
     while True and connect:
         read, write, error = select.select(inputs, [], [])
         message = ""
         for inp in read:
-            if inp == skt:
-                message = get_message(inp)
-                if message == '':
-                    disconnect()
-                    break
-                elif message == 1:
-                    continue
-                else:
-                    now = datetime.datetime.now()
-                    print2("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)),message))
-                    print2("<you> ", end="")
+            message = get_message(inp)
+            if message == '':
+                disconnect()
+                break
+            elif message == 1:
+                continue
             else:
-                while writing:
-                    time.sleep(0.5)
-                writing = True
-                message = sys.stdin.readline().rstrip()
-                end_of_message = "q"
-                command = ""
-                start_of_message = "<you> "
-                if len(message) >= 1:
-                    if message[0] == "!":
-                        start_of_message = "<command> "
-                        end_of_message = "c"
-                        message = message[1:]
-                        command = message
-                print2("\033[1A\033[K" + start_of_message + message)
-                message += end_of_message
-                send_message(message, skt, public_server, private_key)
-                if command != "":
-                    handle_commands(command)
-                time.sleep(0.5)
+                now = datetime.datetime.now()
+                print2("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)),message))
                 print2("<you> ", end="")
-                writing = False
+
 
 
                 # get_message_from_user(skt)    # if work than need only this to get message from user!
