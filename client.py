@@ -290,14 +290,14 @@ def read_input():
                 end_of_message = "c"
                 message = message[1:]
                 command = message
-            print2('\x1b[{}C\x1b[1A\r%s\r%s%s' % ((" " * len(message) * 2), start_of_message, message))
-            message += end_of_message
-            send_message(message, skt, public_server, private_key)
-            if command != "":
-                handle_commands(command)
-            time.sleep(0.5)
-            print2("<you> ", end="")
-            writing = False
+        print2('\x1b[{}C\x1b[1A\r%s\r%s%s' % ((" " * len(message) * 2), start_of_message, message))
+        message += end_of_message
+        send_message(message, skt, public_server, private_key)
+        if command != "":
+            handle_commands(command)
+        time.sleep(0.5)
+        print2("<you> ", end="")
+        writing = False
 
 def main():
     global public_server, private_key, public_key, str_public, IP, PORT, skt, connect
