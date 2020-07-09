@@ -290,7 +290,7 @@ def read_input():
                 end_of_message = "c"
                 message = message[1:]
                 command = message
-            print2('\x1b[{}C\x1b[1A\r%s\r%s%s' % ((" " * len(message) * 2)), start_of_message, message))
+            print2('\x1b[{}C\x1b[1A\r%s\r%s%s' % ((" " * len(message) * 2), start_of_message, message))
             message += end_of_message
             send_message(message, skt, public_server, private_key)
             if command != "":
