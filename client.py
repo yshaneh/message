@@ -338,7 +338,6 @@ def main():
         return
     print2("get server public key")
     message = skt.recv(socket_message_size)
-    print(message)
     public_server = crypt_keys.str_to_public(message[6:])
     if not public_server:
         print("server disconnected")
