@@ -238,7 +238,7 @@ def handle_user_message(message, skt):
 
 def check_code(code, public_server):
     print("you got code %s from server, please check with the server you got the same code as he sent" % code.decode())
-    if input("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or no_keys.verify_code(code, public_server):
+    if input("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or crypt_keys.verify_code(code, public_server):
         print("probably someone listen to you, please check it and try again")
         disconnect()
         return False
