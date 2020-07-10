@@ -118,6 +118,7 @@ def get_ip():
 def is_on(temp_ip):
     global found_ips, checked
     skt_try = socket.socket()
+    skt_try.settimeout(3)
     try:
         skt_try.connect((temp_ip, PORT))
         found_ips.append(temp_ip)
