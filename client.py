@@ -291,7 +291,7 @@ def read_input():
                 end_of_message = "c"
                 message = message[1:]
                 command = message
-         now = datetime.now()
+        now = datetime.now()
         print2('\x1b[{}C\x1b[1A\r%s\r%d:%d <you> %s%s' % ((" " * len(message) * 2), now.hour, now.minute, start_of_message, message))
         message += end_of_message
         send_message(message, skt, public_server, private_key)
