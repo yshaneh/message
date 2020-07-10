@@ -238,7 +238,7 @@ def handle_user_message(message, skt):
 
 def check_code(code, public_server):
     print("you got code %s from server, please check with the server you got the same code as he sent" % code.decode())
-    if input("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_server):
+    if input("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or no_keys.verify_code(code, public_server):
         print("probably someone listen to you, please check it and try again")
         disconnect()
         return False
@@ -252,7 +252,7 @@ def check_code(code, public_server):
 #     print2(user_message, end="")
 #     a = getch.getch()
 #     if a ==  '\x7f':
-#         if len(user_message) > 6:
+#         if len(user_message) > 
 #             user_message = user_message[:-1]
 #     else:
 #         if a != '\x1b':
@@ -340,12 +340,12 @@ def main():
         return
     print2("get server public key")
     message = skt.recv(socket_message_size)
-    public_server = crypt_keys.str_to_public(message[6:])
+    public_server = crypt_keys.str_to_public(message[8:])
     if not public_server:
         print("server disconnected")
         return
     print2("key received from server")
-    check_code(message[:6], public_server)
+    check_code(message[:8], public_server)
     print2("send your public key to server")
     skt.send(str_public)
     print2("key is sent to the server\n\n")
