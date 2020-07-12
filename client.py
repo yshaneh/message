@@ -296,7 +296,8 @@ def read_input():
                 message = message[1:]
                 command = message
         now = datetime.now()
-        print2('\x1b[{}C\x1b[1A\r%s\r%d:%d %s%s' % ((" " * len(message) * 2), now.hour, now.minute, start_of_message, message))
+        # print2('\x1b[{}C\x1b[1A\r%s\r%d:%d %s%s' % ((" " * len(message) * 2), now.hour, now.minute, start_of_message, message))
+        print2("\x1b[{}C\x1b[1A\r%s\r%d:%s %s%s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)), start_of_message, message))
         message += end_of_message
         send_message(message, skt, public_server, private_key)
         if command != "":
@@ -391,6 +392,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except ConnectionResetError:
+    except (ConnectionResetError, BrokenPipeError):
         disconnect()
         sys.exit(0)

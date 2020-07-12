@@ -420,6 +420,7 @@ def get_message(conn):
 
 def handle_client(conn, addr):
     global private_key, public_key
+    clients_address[conn] = addr[0] + ":" + str(addr[1])
     private_key[conn], public_key[conn] = crypt_keys.get_keys()
     client_queue[conn] = ""
     client_ip[conn] = addr[0]
@@ -444,7 +445,6 @@ def handle_client(conn, addr):
             reason = "%s disconnected" % client_users[conn]
         remove(conn, addr[0] + " disconnected", reason)
         return None
-    clients_address[conn] = addr[0] + ":" + str(addr[1])
     print("key recived")
     # name = get_message(conn)
     # accept = input("%s try to connect to server in name '%s', do aprove? ('y' for yes and everythingelse for no): " %  (clients_address[conn], name))
@@ -527,10 +527,10 @@ def server_messages():
             send_to_everybody(server_message, None)
     
 def new_connection(conn,addr):
-    #try:
+    try:
         handle_client(conn, addr)
-    # except:
-    #     remove(conn)
+    except (BrokenPipeError, ConnectionResetError):
+        remove(conn)
         
 
 
