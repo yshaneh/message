@@ -53,12 +53,15 @@ def handle_commands(message):
     global private_key, public_key, str_public
     command = message.split(" ")[0]
     if command == "chkeys":
+        old_private = private_key
         print2("\ngenerate new keys...")
         private_key, public_key = crypt_keys.get_keys()
         str_public = crypt_keys.public_to_str(public_key)
         print2("keys generated")
+        print("\n\n%s\n\n" % str_public.decode())
         print2("send new public key to server...")
-        skt.send(str_public)
+        signed = crypt_keys.sign(str_public, old_private)
+        skt.send(b"%d %s%s" % (len(signed), signed, str_public))
         print2("public key is sent to the server\n")
 
 
@@ -180,6 +183,7 @@ def get_message(skt):
         pass
     return message
 
+
 def send_message(message, skt, public_server, private_key):
     message = crypt_keys.encrypt(message, public_server)
     sign_message = crypt_keys.sign(message, private_key)
@@ -238,7 +242,7 @@ def handle_user_message(message, skt):
 
 def check_code(code, public_server):
     print("you got code %s from server, please check with the server you got the same code as he sent" % code.decode())
-    if input("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or crypt_keys.verify_code(code, public_server):
+    if input("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_server):
         print("probably someone listen to you, please check it and try again")
         disconnect()
         return False
@@ -292,7 +296,7 @@ def read_input():
                 message = message[1:]
                 command = message
         now = datetime.now()
-        print2('\x1b[{}C\x1b[1A\r%s\r%d:%d <you> %s%s' % ((" " * len(message) * 2), now.hour, now.minute, start_of_message, message))
+        print2('\x1b[{}C\x1b[1A\r%s\r%d:%d %s%s' % ((" " * len(message) * 2), now.hour, now.minute, start_of_message, message))
         message += end_of_message
         send_message(message, skt, public_server, private_key)
         if command != "":
@@ -368,7 +372,7 @@ def main():
             elif message == 1:
                 continue
             else:
-                now = datetime.datetime.now()
+                now = datetime.now()
                 print2("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)),message))
                 print2("<you> ", end="")
 
@@ -385,4 +389,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ConnectionResetError:
+        disconnect()
+        sys.exit(0)

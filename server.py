@@ -142,10 +142,18 @@ def handle_command(message, conn):
                 message = "command '%s' is not defined" % params[0]
         send_message(conn, message)
     elif command == "chkeys":
-        temp_message = conn.recv(socket_message_size)
+        temp_message = conn.recv(socket_message_size * 10) 
         if temp_message:
                 print("get public key from %s" % client_ip[conn])
-                clients_keys[conn] = crypt_keys.str_to_public(temp_message)
+                temp_message = temp_message
+                length = int(temp_message.split(b" ")[0])
+                temp_message = b" ".join(temp_message.split(b" ")[1:])
+                signed = temp_message[:length]
+                tmp_key = temp_message[length:]
+                if crypt_keys.check(signed, tmp_key, clients_keys[conn]):
+                    clients_keys[conn] = crypt_keys.str_to_public(tmp_key)
+                else:
+                    remove(conn, "error while trying to change key")
                 return True
         else:
             return False
@@ -305,7 +313,7 @@ def sign_up(conn, addr):
     while not success:
         send_message(conn, "insert username 0")
         print("get username from %s" % addr[0])
-        username = get_message(conn, addr)
+        username = get_message(conn)
         #time.sleep(2)
         if not username:
             return False
@@ -313,7 +321,7 @@ def sign_up(conn, addr):
         print("receive username '%s' from %s\n" % (username, addr[0]))
         print("get password from %s\n" % addr[0])
         send_message(conn, "insert password1")
-        password = get_message(conn, addr)
+        password = get_message(conn)
         #time.sleep(2)
         if not password:
             return False
@@ -364,7 +372,7 @@ def login(conn, addr):
     while not logged:
         print("get username from %s" % addr[0])
         send_message(conn, "%sinsert username (or 'sign up' for sign up) 0" % message) # extension 0 tells the client to insert a username
-        username = get_message(conn, addr)
+        username = get_message(conn)
         #time.sleep(2)
         if not username:
             return False
@@ -375,7 +383,7 @@ def login(conn, addr):
             return sign_up(conn, addr)
         print("get password from %s" % addr[0])
         send_message(conn, "insert passord1") # extension 1 tells the user to insert a password
-        password = get_message(conn, addr)
+        password = get_message(conn)
         #time.sleep(2)
         if not password:
             return False
@@ -388,7 +396,7 @@ def login(conn, addr):
     print("%s logged in successfully as %s" % (addr[0], username))
     return True
 
-def get_message(conn, addr):
+def get_message(conn):
     while True:
         if client_queue[conn]:
             message = client_queue[conn]
@@ -407,7 +415,7 @@ def get_message(conn, addr):
             reason = ""
             if conn in client_users:
                 reason = "%s disconnected" % client_users[conn]
-            remove(conn, addr[0] + " disconnected", reason)
+            remove(conn, clients_address[conn] + " disconnected", reason)
             return ''
 
 def handle_client(conn, addr):
@@ -438,7 +446,7 @@ def handle_client(conn, addr):
         return None
     clients_address[conn] = addr[0] + ":" + str(addr[1])
     print("key recived")
-    # name = get_message(conn, addr)
+    # name = get_message(conn)
     # accept = input("%s try to connect to server in name '%s', do aprove? ('y' for yes and everythingelse for no): " %  (clients_address[conn], name))
     # if accept.lower() != 'y':
     #     send_message(conn, 'server refuse to connected! n')
@@ -451,7 +459,7 @@ def handle_client(conn, addr):
     send_message(conn, "welcome to my chat room :)\n\n")
     send_to_everybody("%s joined" % client_users[conn], conn)
     while  True and conn in clients:
-        message = get_message(conn, addr)
+        message = get_message(conn)
         if message:
             if message[-1] == "c":
                 message = message[:-1]
@@ -479,8 +487,10 @@ def send_message(conn, message):
     # nothing = conn.recv(socket_message_size)
     time.sleep(0.1)
 
-def remove(conn, message, reason=""):
+def remove(conn, message="", reason=""):
     global clients, clients_keys, client_users
+    if not message:
+        message = "%s disconnected" % clients_address[conn]
     print(message)
     conn.close()
     if conn in clients:
@@ -515,6 +525,13 @@ def server_messages():
             print("\033[1A\033[K<you> %s" % server_message)
             server_message = "<server> " + server_message
             send_to_everybody(server_message, None)
+    
+def new_connection(conn,addr):
+    #try:
+        handle_client(conn, addr)
+    # except:
+    #     remove(conn)
+        
 
 
 def main():
@@ -534,7 +551,7 @@ def main():
         conn, addr = skt.accept()
         clients.append(conn)
         print(str(addr[0]) + " connected")
-        thread.start_new_thread(handle_client, (conn, addr))
+        thread.start_new_thread(new_connection, (conn, addr))
 
 if __name__ == "__main__":
     main()

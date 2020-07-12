@@ -1,6 +1,6 @@
 import json
 import os
-from hashlib import sha512 as SHA512
+from hashlib import sha512 
 import uuid
 import base64
 import re
@@ -78,7 +78,7 @@ def create_user(creator_name, username, password, usertype="user"):
     users[username]["start_salt"] = start_salt.decode()
     users[username]["end_salt"] = end_salt.decode()
     salted_password = start_salt + password.encode() + end_salt
-    hashed_password = SHA512.new(salted_password)
+    hashed_password = sha512(salted_password)
     users[username]["password"] = hashed_password.hexdigest()
     users[username]["type"] = usertype
     users[username]["is_logged"] = False
@@ -92,7 +92,7 @@ def login(username, password):
         return False, "user is already logged in\n\n"
     user = users[username]
     salted_password = (user["start_salt"] + password + user["end_salt"]).encode()
-    if user["password"] == SHA512.new(salted_password).hexdigest():
+    if user["password"] == sha512(salted_password).hexdigest():
         users[username]["is_logged"] = True
         return True, "you have successfully logged in as %s2" % username
     return False, "wrong username or password, please try again...\n\n"
