@@ -319,6 +319,9 @@ def login(conn, addr):
         message = get_message(conn)
         if not message:
             return False
+        if message =="sign up":
+            send_message(conn, "ok")
+            return sign_up(conn, addr)
         message = message[:-1].splitlines()
         if len(message) != 2:
             send_message(conn, "2")
@@ -332,38 +335,6 @@ def login(conn, addr):
     print("%s logged in successfully as %s" % (addr[0], username))
     return True
 
-
-# def sign_up(conn, addr):
-#     success = False
-#     while not success:
-#         send_message(conn, "insert username 0")
-#         print("get username from %s" % addr[0])
-#         username = get_message(conn)
-#         #time.sleep(2)
-#         if not username:
-#             return False
-#         username = username[:-1]
-#         print("receive username '%s' from %s\n" % (username, addr[0]))
-#         print("get password from %s\n" % addr[0])
-#         send_message(conn, "insert password1")
-#         password = get_message(conn)
-#         #time.sleep(2)
-#         if not password:
-#             return False
-#         password = password[:-1]
-#         print("receive password '%s' from %s\n" % (password, addr[0]))
-#         success, message = users.create_user('sign up', username, password)
-#         if success:
-#             message += "2"
-#         else:
-#             message += "0"
-#         #time.sleep(4)
-#         send_message(conn, message)
-#         if success:
-#             print("%s successfully created user '%s'\n" % (addr[0], username))
-#     client_users[conn] = username
-#     success, message = users.login(username, password)
-#     return True
 
 def sign_up(conn, addr):
     success = False
@@ -380,11 +351,6 @@ def sign_up(conn, addr):
         print("receive username '%s' from %s\n" % (username, addr[0]))
         print("receive password '%s' from %s\n" % (password, addr[0]))
         success, message = users.create_user('sign up', username, password)
-        if success:
-            message += "2"
-        else:
-            message += "0"
-        #time.sleep(4)
         send_message(conn, message)
         if success:
             print("%s successfully created user '%s'\n" % (addr[0], username))

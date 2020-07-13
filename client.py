@@ -78,6 +78,12 @@ def handle_commands(message):
         signed = crypt_keys.sign(str_public, old_private)
         skt.send(b"%d %s%s" % (len(signed), signed, str_public))
         console.write("public key is sent to the server\n")
+    elif command == "adduser":
+        messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "Invaild type!", "permission denied"]
+        message = status()
+        if message == None:
+            return
+        console.write(message[message])
 
 
 def message_with_len(message):
@@ -240,14 +246,14 @@ def status():
     try:
         return int(get_message(skt))
     except:
-        return False
+        return
 
 
 def login(username, password):
     messages = ["wrong username or password, please try again...\n\n", "user is already logged in\n\n", "invalid loggin!", "you have successfully logged in as %s" % username]
     send_message("%s\n%sq" % (username, password), skt, public_server, private_key)
     message = status()
-    if not message:
+    if message == None:
         return False
     console.write(messages[message]) 
     return message == 3
@@ -259,7 +265,7 @@ def signup(username, password, confirm_password):
         return False
     send_message("%s\n%sq" % (username, password), skt, public_server, private_key)
     message = status()
-    if not message:
+    if message == None:
         return False
     console.write(messages[message]) 
     return message == 3
@@ -357,6 +363,8 @@ def main():
         while not logged:
             logged = login(console.read("username: "), console.read("password: "))
     else:
+        send_message("sign up", skt, public_server, private_key)
+        get_message(skt)
         while not logged:
             logged = signup(console.read("username: "), console.read("password: "), console.read("confirm password: "))
     console.write("<you> ", end="")

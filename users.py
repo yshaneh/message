@@ -59,10 +59,10 @@ def create_user(creator_name, username, password, usertype="user"):
     # check whether the user has permissions to create users
     try:
         if not is_admin(creator_name):
-            return False, "permission denied"
+            return False, "6"
     except:
         if creator_name != "sign up":
-            return False, "error occurred..."
+            return False, "4"
     if has_special(username):
         return False, "0"
     # check if this name already exists
@@ -71,7 +71,7 @@ def create_user(creator_name, username, password, usertype="user"):
     if username in invaild_names:
         return False, "2"
     if usertype not in types:
-        return False, "Invaild type!"
+        return False, "5"
     users[username] = {}
     start_salt = base64.urlsafe_b64encode(uuid.uuid4().bytes)
     end_salt = base64.urlsafe_b64encode(uuid.uuid4().bytes)
