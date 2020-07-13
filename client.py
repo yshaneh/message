@@ -32,15 +32,81 @@ skt, public_server, private_key, public_key, str_public, IP, PORT = None, None, 
 class IO:
     def read(self):
         raise Exception('not implemented')
+
     def write(self, msg):
         raise Exception('not implemented')
 
 class Console(IO):
     def read(self, msg=''):
         return input(msg)
+
     def write(self, msg, end="\n"):
         print(msg, end=end)
         sys.stdout.flush()
+
+    def choose_ip(self):
+        global IP, PORT
+        IP = self.read("inser the server ip (or nothing for search in your network): ")
+        PORT = -1
+        while PORT < 0 or PORT > 65535:
+            try:
+                PORT = console.read("insert the port number: (deafult 5555): ")
+                if PORT == "":
+                    PORT = 5555
+                else:
+                    PORT = int(PORT)
+                if PORT < 0:
+                    console.write("too low! range is 0 to 65535 ")
+            except:
+                console.write("illegal choice! try again...")
+                PORT = -1
+            if PORT > 65535:
+                console.write("too high! range is 0 to 65535")
+        if IP == '':
+            search_on_network()
+
+    def get_messages(self):
+        global writing
+        while connect:
+            while writing:
+                time.sleep(0.5)
+            writing = True
+            message = sys.stdin.readline().rstrip()
+            end_of_message = "q"
+            command = ""
+            start_of_message = "<you> "
+            if len(message) >= 1:
+                if message[0] == "!":
+                    start_of_message = "<command> "
+                    end_of_message = "c"
+                    message = message[1:]
+                    command = message
+            now = datetime.now()
+            self.write("\x1b[{}C\x1b[1A\r%s\r%d:%s %s%s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)), start_of_message, message))
+            message += end_of_message
+            send_message(message, skt, public_server, private_key)
+            if command != "":
+                handle_commands(command)
+            time.sleep(0.5)
+            self.write("<you> ", end="")
+            writing = False
+
+    def exec(self):
+        inputs = [skt]
+        while True and connect:
+            read, write, error = select.select(inputs, [], [])
+            message = ""
+            for inp in read:
+                message = get_message(inp)
+                if message == '':
+                    disconnect()
+                    break
+                elif message == 1:
+                    continue
+                else:
+                    now = datetime.now()
+                    self.write("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)) ,message))
+                    self.write("<you> ", end="")
 
 
 
@@ -122,7 +188,7 @@ def choose_ip(found_ips):
             elif choice > len(found_ips):
                 console.write("illegal, number is too high!")
         except:
-            console.write("illegal console.read! you need to insert number")
+            console.write("illegal input! you need to insert number")
             choice = -1
     IP = found_ips[choice - 1]
 
@@ -280,59 +346,22 @@ def check_code(code, public_server):
 
 
 
-def read_input():
-    global writing
-    while connect:
-        while writing:
-            time.sleep(0.5)
-        writing = True
-        message = sys.stdin.readline().rstrip()
-        end_of_message = "q"
-        command = ""
-        start_of_message = "<you> "
-        if len(message) >= 1:
-            if message[0] == "!":
-                start_of_message = "<command> "
-                end_of_message = "c"
-                message = message[1:]
-                command = message
-        now = datetime.now()
-        console.write("\x1b[{}C\x1b[1A\r%s\r%d:%s %s%s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)), start_of_message, message))
-        message += end_of_message
-        send_message(message, skt, public_server, private_key)
-        if command != "":
-            handle_commands(command)
-        time.sleep(0.5)
-        console.write("<you> ", end="")
-        writing = False
+
 
 def main():
-    global public_server, private_key, public_key, str_public, IP, PORT, skt, connect
-    IP = console.read("inser the server ip (or nothing for search in your network): ")
-    PORT = -1
-    while PORT < 0 or PORT > 65535:
-        try:
-            PORT = console.read("insert the port number: (deafult 5555): ")
-            if PORT == "":
-                PORT = 5555
-            else:
-                PORT = int(PORT)
-            if PORT < 0:
-                console.write("too low! range is 0 to 65535 ")
-        except:
-            console.write("illegal choice! try again...")
-            PORT = -1
-        if PORT > 65535:
-            console.write("too high! range is 0 to 65535")
-    if IP == '':
-        search_on_network()
+    console.choose_ip()
+    connect()
+    identification()
+    console.exec()
+
+
+def connect():
+    global  skt, connect, public_server, private_key, public_key, str_public
     private_key, public_key = crypt_keys.get_keys()
     str_public = crypt_keys.public_to_str(public_key)
 
     skt = socket.socket()
     skt.connect((IP, PORT))
-
-    inputs = [skt]
     connect = True
 
     message = skt.recv(1024).decode()
@@ -355,6 +384,7 @@ def main():
     skt.send(str_public)
     console.write("key is sent to the server\n\n")
 
+def identification():
     logged = False
     action = ""
     while action != "login" and action != "sign up":
@@ -368,26 +398,8 @@ def main():
         while not logged:
             logged = signup(console.read("username: "), console.read("password: "), console.read("confirm password: "))
     console.write("<you> ", end="")
-    _thread.start_new_thread(read_input, ())
-    while True and connect:
-        read, write, error = select.select(inputs, [], [])
-        message = ""
-        for inp in read:
-            message = get_message(inp)
-            if message == '':
-                disconnect()
-                break
-            elif message == 1:
-                continue
-            else:
-                now = datetime.now()
-                console.write("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)),message))
-                console.write("<you> ", end="")
-                # get_message_from_user(skt)    # if work than need only this to get message from user!  
-    # user_thread = threading.Thread(target=get_message_from_user, args=(skt,))
-    # server_thread = threading.Thread(target=get_message_from_server, args=(skt,))
-    # user_thread.start()
-    # server_thread.start()
+    _thread.start_new_thread(console.get_messages, ())
+
 
 
 if __name__ == "__main__":

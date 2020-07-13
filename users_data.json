@@ -12,5 +12,12 @@
     "password": "f39b687cc1eb6a24f11160a4fd004de19eddf4f833da93dc045e9c9775ceedcdd4bb5cb2f2209bc7c933d6f70c8d2825c3ba0cd7c33df2904aa913ebd2f17495",
     "type": "user",
     "is_logged": false
+  },
+  "qwe": {
+    "start_salt": "sG_QmCtxRxilKrPZ8YnfPQ==",
+    "end_salt": "GExIsoLNTLOPfY09nx5RUQ==",
+    "password": "3a119482e16027d511fba92de0946dae6299a45e8c14929c479489a201672bf3a1aa4a56fcfbb53765b2a9d90dfe1d1d319a6385a9dae59f8d1eb29a28091694",
+    "type": "user",
+    "is_logged": false
   }
 }
