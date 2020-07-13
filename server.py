@@ -127,16 +127,26 @@ def handle_command(message, conn):
     if command not in commands:
         send_message(conn, "invalid command! type '!help'")
         return True
+    
     if command == "help":
-        message = "invalid usage! type '!help help'"
+        # message = "invalid usage! type '!help help'"
+        message = "1"
         if paramsnum == 0:
             message = "\n".join(commands)
+            send_message(conn, "0")
+            if not get_message(conn):
+                remove(conn)
+                return
         elif paramsnum == 1:
             if params[0] in help:
                 message = help[params[0]]
+                send_message(conn, "0")
+                get_message(conn)
             else:
-                message = "command '%s' is not defined" % params[0]
+                # message = "command '%s' is not defined" % params[0]
+                message = "2"
         send_message(conn, message)
+    
     elif command == "chkeys":
         temp_message = conn.recv(socket_message_size * 10) 
         if temp_message:
@@ -153,6 +163,7 @@ def handle_command(message, conn):
                 return True
         else:
             return False
+    
     elif command == "chname":
         if paramsnum != 2:
             send_message(conn, "invalid usage! type '!help chname'")
@@ -166,6 +177,7 @@ def handle_command(message, conn):
             client_users[tmp] = username
             if success:
                 send_message_to_user(username, "%s change your name to %s" % (user, username))
+    
     elif command == "chtype":
         if paramsnum != 2:
             send_message(conn, "invalid usage! type '!help chtype'")
@@ -178,6 +190,7 @@ def handle_command(message, conn):
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
             if success:
                 send_message_to_user(username, "%s change your type to %s" % (client_users[conn], new_type))
+    
     elif command == "adduser":
         if paramsnum == 2:
             params[2] = 'user'
@@ -190,6 +203,7 @@ def handle_command(message, conn):
         usertype = params[2]
         success, message = users.create_user(user, username, password, usertype)
         send_message(conn, message)
+    
     elif command == "mute":
         if paramsnum != 1:
             send_message(conn, "invalid usage! type '!help mute'")
@@ -200,6 +214,7 @@ def handle_command(message, conn):
             users_muted[username] = True
             send_message_to_user(username, "%s has muted you" % user)
         send_message(conn, message)
+    
     elif command == "unmute":
         username = params[0]
         success, message = users.unmute(user, username)
@@ -207,6 +222,7 @@ def handle_command(message, conn):
             users_muted[username] = False
             send_message_to_user(username, "%s has unmuted you" % user)
         send_message(conn, message)
+    
     elif command == "kick":
         if paramsnum != 1:
             send_message(conn, "invalid usage! type '!help kick'")
@@ -220,6 +236,7 @@ def handle_command(message, conn):
             if exist:
                 send_message_to_user(username, "%s has kicked you" % user)
                 remove(c, reason , reason)
+    
     elif command == "users":
         if paramsnum == 0:
             message = ""
@@ -273,6 +290,7 @@ def handle_command(message, conn):
             send_message(conn, "[%s] %s : %s" % (users.users[username]['type'], username, client_ip[c]))
         else:
             send_message(conn, "invalid usage! type '!help users'")
+    
     elif command == "ban":
         if not users.is_admin(user):
             send_message(conn, "permission denied! only admin can ban")
@@ -287,6 +305,7 @@ def handle_command(message, conn):
             else:
                 message  = "invalid ip '%s'" % ip
         send_message(conn, message)
+    
     elif command == "unban":
         if not users.is_admin(user):
             send_message(conn, "permission denied! only admin can unban")

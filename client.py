@@ -26,6 +26,8 @@ queue = ""
 socket_message_size = 1030
 writing = False
 skt, public_server, private_key, public_key, str_public, IP, PORT = None, None, None, None, None, None, None
+wait_for_command = False
+comands_queue = []
 
 
 
@@ -130,9 +132,13 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-
 def handle_commands(message):
-    global private_key, public_key, str_public
+    wait_for_command = True
+    exec_commands(message)
+    wait_for_command = False
+
+def exec_commands(message):
+    global private_key, public_key, str_public, wait_for_command
     command = message.split(" ")[0]
     if command == "chkeys":
         old_private = private_key
@@ -155,6 +161,24 @@ def handle_commands(message):
             console.write(messages[message])
         except:
             return
+    
+    elif command == "help":
+        messages = ["", "invalid usage! type '!help help'", "command '%s' is not defined" % " ".join(message.split(" ")[1:])]
+        message = status()
+        if message == None:
+            return
+        if message == 0:
+            send_message(randomString(10), skt, public_server, private_key)
+            return
+        try:
+            console.write(messages[message])
+        except:
+            return
+
+
+def print_response(message):
+    pass #need to write...
+
 
 
 def message_with_len(message):
@@ -229,7 +253,7 @@ def search_on_network():
     network_ip = local_ip[0:-len(local_ip.split(".")[-1])]
     temp_ip = ""
     skt_try = socket.socket()
-    for i in range(1,255):
+    for i in range(1, 255):
         temp_ip = network_ip + str(i)
         threads[i] = threading.Thread(target=is_on, args=(temp_ip,))
         threads[i].start()
