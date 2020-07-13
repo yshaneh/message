@@ -145,12 +145,16 @@ def handle_commands(message):
         signed = crypt_keys.sign(str_public, old_private)
         skt.send(b"%d %s%s" % (len(signed), signed, str_public))
         console.write("public key is sent to the server\n")
+
     elif command == "adduser":
-        messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "Invaild type!", "permission denied"]
+        messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "permission denied", "invalid usage! type '!help adduser'"]
         message = status()
         if message == None:
             return
-        console.write(message[message])
+        try:
+            console.write(messages[message])
+        except:
+            return
 
 
 def message_with_len(message):
@@ -311,7 +315,8 @@ def handle_user_message(message, skt):
 
 def status():
     try:
-        return int(get_message(skt))
+        message= get_message(skt)
+        return int(message)
     except:
         return
 
@@ -322,7 +327,10 @@ def login(username, password):
     message = status()
     if message == None:
         return False
-    console.write(messages[message]) 
+    try:
+        console.write(messages[message]) 
+    except:
+        pass
     return message == 3
 
 def signup(username, password, confirm_password):

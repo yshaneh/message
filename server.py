@@ -183,12 +183,12 @@ def handle_command(message, conn):
             params[2] = 'user'
             paramsnum += 1
         if paramsnum != 3:
-            send_message(conn, "invalid usage! type '!help adduser'")
+            send_message(conn, "7")
             return True
         username = params[0]
         password = params[1]
         usertype = params[2]
-        message = users.create_user(user, username, password, usertype)
+        success, message = users.create_user(user, username, password, usertype)
         send_message(conn, message)
     elif command == "mute":
         if paramsnum != 1:
@@ -520,6 +520,7 @@ def new_connection(conn,addr):
 
 def main():
     global skt
+    users.exit()
     skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     skt.bind((IP, PORT))
