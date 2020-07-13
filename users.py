@@ -64,12 +64,12 @@ def create_user(creator_name, username, password, usertype="user"):
         if creator_name != "sign up":
             return False, "error occurred..."
     if has_special(username):
-        return False, "username can only include numbers and letters"
+        return False, "0"
     # check if this name already exists
     if username in users:
-        return False, "username is already exists"
+        return False, "1"
     if username in invaild_names:
-        return False, "can't creat user with that name!"
+        return False, "2"
     if usertype not in types:
         return False, "Invaild type!"
     users[username] = {}
@@ -83,19 +83,19 @@ def create_user(creator_name, username, password, usertype="user"):
     users[username]["type"] = usertype
     users[username]["is_logged"] = False
     save()
-    return True, "user created successfully"
+    return True, "3"
 
 def login(username, password):
     if username not in users:
-        return False, "wrong username or password, please try again...\n\n"
+        return False, "0"
     if users[username]["is_logged"]:
-        return False, "user is already logged in\n\n"
+        return False, "1"
     user = users[username]
     salted_password = (user["start_salt"] + password + user["end_salt"]).encode()
     if user["password"] == sha512(salted_password).hexdigest():
         users[username]["is_logged"] = True
-        return True, "you have successfully logged in as %s2" % username
-    return False, "wrong username or password, please try again...\n\n"
+        return True, "3"
+    return False, "0"
 
 def logout(username):
     if username in users:

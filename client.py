@@ -29,10 +29,6 @@ skt, public_server, private_key, public_key, str_public, IP, PORT = None, None, 
 
 
 
-def print2(message, end="\n"):
-    print(message, end=end)
-    sys.stdout.flush()
-
 class IO:
     def read(self):
         raise Exception('not implemented')
@@ -43,15 +39,9 @@ class Console(IO):
     def read(self, msg=''):
         return input(msg)
     def write(self, msg, end="\n"):
-        print2(msg, end=end)
+        print(msg, end=end)
+        sys.stdout.flush()
 
-class uni_test(IO):
-    def __init__(self, queue):
-        self.queue = queue
-    def read(self):
-        return queue.pop()
-    def write(self, msg):
-        print2(msg)
 
 
 
@@ -83,7 +73,7 @@ def handle_commands(message):
         private_key, public_key = crypt_keys.get_keys()
         str_public = crypt_keys.public_to_str(public_key)
         console.write("keys generated")
-        print("\n\n%s\n\n" % str_public.decode())
+        console.write("\n\n%s\n\n" % str_public.decode())
         console.write("send new public key to server...")
         signed = crypt_keys.sign(str_public, old_private)
         skt.send(b"%d %s%s" % (len(signed), signed, str_public))
@@ -224,33 +214,13 @@ def disconnect():
         connect = False
         console.write("bye!")
         skt.close()
+    sys.exit(0)
 
 def randomString(stringLength=256):
     letters = string.ascii_lowercase
     return (''.join(random.choice(letters) for i in range(stringLength))).encode()
 
-def login(skt, public_server, private_key):
-    global connect
-    logged_in = False
-    while not logged_in:
-        message = get_message(skt)
-        time.sleep(0.5)
-        if message == '':
-            disconnect()
-            return None
-        elif message == 1:
-            continue
-        # skt.send(randomString())
-        console.write(message[:-1])
-        end_of_message = int(message[-1])
-        if end_of_message == 0:
-            username = console.read("username: ") + 'q'
-            send_message(username, skt, public_server, private_key)
-        elif end_of_message == 1:
-            password = console.read("password: ") + 'q'
-            send_message(password, skt, public_server, private_key)
-        elif end_of_message == 2:
-            logged_in = True
+
 
 def handle_user_message(message, skt):
     end_of_message = "q"
@@ -265,44 +235,44 @@ def handle_user_message(message, skt):
             if command != "":
                 handle_commands(command)
 
+
+def status():
+    try:
+        return int(get_message(skt))
+    except:
+        return False
+
+
+def login(username, password):
+    messages = ["wrong username or password, please try again...\n\n", "user is already logged in\n\n", "invalid loggin!", "you have successfully logged in as %s" % username]
+    send_message("%s\n%sq" % (username, password), skt, public_server, private_key)
+    message = status()
+    if not message:
+        return False
+    console.write(messages[message]) 
+    return message == 3
+
+def signup(username, password, confirm_password):
+    messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully"]
+    if password != confirm_password:
+        console.write("passwords does not match. try again...")
+        return False
+    send_message("%s\n%sq" % (username, password), skt, public_server, private_key)
+    message = status()
+    if not message:
+        return False
+    console.write(messages[message]) 
+    return message == 3
+
 def check_code(code, public_server):
-    print("you got code %s from server, please check with the server you got the same code as he sent" % code.decode())
+    console.write("you got code %s from server, please check with the server you got the same code as he sent" % code.decode())
     if console.read("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_server):
-        print("probably someone listen to you, please check it and try again")
+        console.write("probably someone listen to you, please check it and try again")
         disconnect()
         return False
     return True
 
 
-# def get_message_from_user(skt):
-#     global user_message
-#     user_message = "<you> "
-#     print("\r                                        \r", end="")
-#     console.write(user_message, end="")
-#     a = getch.getch()
-#     if a ==  '\x7f':
-#         if len(user_message) > 
-#             user_message = user_message[:-1]
-#     else:
-#         if a != '\x1b':
-#             user_message += a
-#     console.write("\r" + (" " * (len(user_message) + 10)), end="\r")
-#     console.write(user_message, end="")
-#     if a == "\n":
-#         handle_user_message(user_message[6:], skt)
-#         user_message = "<you> "
-#         console.write(user_message, end="")
-
-# def get_message_from_server(skt):
-#     while connect:
-#         message = get_message(skt)
-#         if message == '':
-#             disconnect()
-#             return None
-#         elif message == 1:
-#             continue
-#         console.write("\r" + (" " * ( len(user_message) + 10)), end=message) # clean user message and prinr message from server
-#         console.write(user_message, end="") # return the user message back to the screen
 
 def read_input():
     global writing
@@ -321,7 +291,6 @@ def read_input():
                 message = message[1:]
                 command = message
         now = datetime.now()
-        # console.write('\x1b[{}C\x1b[1A\r%s\r%d:%d %s%s' % ((" " * len(message) * 2), now.hour, now.minute, start_of_message, message))
         console.write("\x1b[{}C\x1b[1A\r%s\r%d:%s %s%s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)), start_of_message, message))
         message += end_of_message
         send_message(message, skt, public_server, private_key)
@@ -364,7 +333,7 @@ def main():
     if not message:
         disconnect()
         return
-    print(message[:-1])
+    console.write(message[:-1])
     if message[-1] == "q":
         disconnect()
         return
@@ -372,19 +341,24 @@ def main():
     message = skt.recv(socket_message_size)
     public_server = crypt_keys.str_to_public(message[8:])
     if not public_server:
-        print("server disconnected")
+        console.write("server disconnected")
         return
     console.write("key received from server")
     check_code(message[:8], public_server)
     console.write("send your public key to server")
     skt.send(str_public)
     console.write("key is sent to the server\n\n")
-    # send_message(console.read("enter your name: "), skt, public_server, private_key)
-    # message = get_message(skt)
-    # print(message[:-1])
-    # if message[-1] == 'n':
-    #     connect = False
-    login(skt, public_server, private_key)
+
+    logged = False
+    action = ""
+    while action != "login" and action != "sign up":
+        action = input("insert 'login' to login or 'sign up' to sign up: ")
+    if action == "login":
+        while not logged:
+            logged = login(console.read("username: "), console.read("password: "))
+    else:
+        while not logged:
+            logged = signup(console.read("username: "), console.read("password: "), console.read("confirm password: "))
     console.write("<you> ", end="")
     _thread.start_new_thread(read_input, ())
     while True and connect:
@@ -401,17 +375,11 @@ def main():
                 now = datetime.now()
                 console.write("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)),message))
                 console.write("<you> ", end="")
-
-
-
-                # get_message_from_user(skt)    # if work than need only this to get message from user!
-
-
+                # get_message_from_user(skt)    # if work than need only this to get message from user!  
     # user_thread = threading.Thread(target=get_message_from_user, args=(skt,))
     # server_thread = threading.Thread(target=get_message_from_server, args=(skt,))
     # user_thread.start()
     # server_thread.start()
-
 
 
 if __name__ == "__main__":

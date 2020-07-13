@@ -310,25 +310,74 @@ def handle_command(message, conn):
     return True
 
 
+def login(conn, addr):
+    global client_users
+    logged = False
+    message = ""
+    while not logged:
+        print("get username and password from %s" % addr[0])
+        message = get_message(conn)
+        if not message:
+            return False
+        message = message[:-1].splitlines()
+        if len(message) != 2:
+            send_message(conn, "2")
+            continue
+        username, password = message
+        print("username '%s' recived from %s" % (username, addr[0]))
+        print("password '%s' received from %s" % (password, addr[0]))
+        logged, message = users.login(username, password)
+        send_message(conn, message)
+    client_users[conn] = username
+    print("%s logged in successfully as %s" % (addr[0], username))
+    return True
+
+
+# def sign_up(conn, addr):
+#     success = False
+#     while not success:
+#         send_message(conn, "insert username 0")
+#         print("get username from %s" % addr[0])
+#         username = get_message(conn)
+#         #time.sleep(2)
+#         if not username:
+#             return False
+#         username = username[:-1]
+#         print("receive username '%s' from %s\n" % (username, addr[0]))
+#         print("get password from %s\n" % addr[0])
+#         send_message(conn, "insert password1")
+#         password = get_message(conn)
+#         #time.sleep(2)
+#         if not password:
+#             return False
+#         password = password[:-1]
+#         print("receive password '%s' from %s\n" % (password, addr[0]))
+#         success, message = users.create_user('sign up', username, password)
+#         if success:
+#             message += "2"
+#         else:
+#             message += "0"
+#         #time.sleep(4)
+#         send_message(conn, message)
+#         if success:
+#             print("%s successfully created user '%s'\n" % (addr[0], username))
+#     client_users[conn] = username
+#     success, message = users.login(username, password)
+#     return True
 
 def sign_up(conn, addr):
     success = False
     while not success:
-        send_message(conn, "insert username 0")
-        print("get username from %s" % addr[0])
-        username = get_message(conn)
+        message = get_message(conn)
         #time.sleep(2)
-        if not username:
+        if not message:
             return False
-        username = username[:-1]
+        message = message[:-1].splitlines()
+        if len(message) != 2:
+            send_message(conn, "2")
+            continue
+        username, password = message
         print("receive username '%s' from %s\n" % (username, addr[0]))
-        print("get password from %s\n" % addr[0])
-        send_message(conn, "insert password1")
-        password = get_message(conn)
-        #time.sleep(2)
-        if not password:
-            return False
-        password = password[:-1]
         print("receive password '%s' from %s\n" % (password, addr[0]))
         success, message = users.create_user('sign up', username, password)
         if success:
@@ -368,36 +417,6 @@ def extract_messages(message_and_sign, conn):
     client_queue[conn] = message_and_sign
     return (message, sign_message)
 
-def login(conn, addr):
-    global client_users
-    logged = False
-    message = ""
-    while not logged:
-        print("get username from %s" % addr[0])
-        send_message(conn, "%sinsert username (or 'sign up' for sign up) 0" % message) # extension 0 tells the client to insert a username
-        username = get_message(conn)
-        #time.sleep(2)
-        if not username:
-            return False
-        print("username '%s' recived from %s" % (username[:-1], addr[0]))
-        username = username[:-1]
-        if username == 'sign up':
-            print("%s sign up now..." % addr[0])
-            return sign_up(conn, addr)
-        print("get password from %s" % addr[0])
-        send_message(conn, "insert passord1") # extension 1 tells the user to insert a password
-        password = get_message(conn)
-        #time.sleep(2)
-        if not password:
-            return False
-        password = password[:-1]
-        print("password '%s' received from %s" % (password, addr[0]))
-        logged, message = users.login(username, password)
-        #time.sleep(4)
-    send_message(conn, message)
-    client_users[conn] = username
-    print("%s logged in successfully as %s" % (addr[0], username))
-    return True
 
 def get_message(conn):
     while True:
