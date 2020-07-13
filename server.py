@@ -131,21 +131,23 @@ def handle_command(message, conn):
     if command == "help":
         # message = "invalid usage! type '!help help'"
         message = "1"
+        ext = "c"
         if paramsnum == 0:
             message = "\n".join(commands)
-            send_message(conn, "0")
-            if not get_message(conn):
-                remove(conn)
-                return
+            ext="q"
+            send_message(conn, "0", "c")
+            # if not get_message(conn):
+            #     remove(conn)
+            #     return
         elif paramsnum == 1:
             if params[0] in help:
                 message = help[params[0]]
-                send_message(conn, "0")
+                send_message(conn, "0", "c")
                 get_message(conn)
             else:
                 # message = "command '%s' is not defined" % params[0]
                 message = "2"
-        send_message(conn, message)
+        send_message(conn, message, ext)
     
     elif command == "chkeys":
         temp_message = conn.recv(socket_message_size * 10) 
@@ -196,13 +198,13 @@ def handle_command(message, conn):
             params[2] = 'user'
             paramsnum += 1
         if paramsnum != 3:
-            send_message(conn, "7")
+            send_message(conn, "7", "c")
             return True
         username = params[0]
         password = params[1]
         usertype = params[2]
         success, message = users.create_user(user, username, password, usertype)
-        send_message(conn, message)
+        send_message(conn, message, "c")
     
     elif command == "mute":
         if paramsnum != 1:
@@ -481,7 +483,8 @@ def handle_client(conn, addr):
             return None
 
 
-def send_message(conn, message):
+def send_message(conn, message, ext="q"):
+    message += ext
     message = crypt_keys.encrypt(message, clients_keys[conn])
     sign_message = crypt_keys.sign(message, private_key[conn])
     message = message_with_len(message)

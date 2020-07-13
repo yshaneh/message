@@ -7,12 +7,9 @@ import signal
 import crypt_keys
 import time
 import _thread
-import random
-import string
 import threading
 from datetime import datetime
 import math
-#import getch
 
 
 
@@ -26,8 +23,7 @@ queue = ""
 socket_message_size = 1030
 writing = False
 skt, public_server, private_key, public_key, str_public, IP, PORT = None, None, None, None, None, None, None
-wait_for_command = False
-comands_queue = []
+commands_queue = []
 
 
 
@@ -132,14 +128,12 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def handle_commands(message):
-    wait_for_command = True
-    exec_commands(message)
-    wait_for_command = False
 
-def exec_commands(message):
-    global private_key, public_key, str_public, wait_for_command
+
+def handle_commands(message):
+    global private_key, public_key, str_public, commands_queue
     command = message.split(" ")[0]
+    commands_queue.append(command)
     if command == "chkeys":
         old_private = private_key
         console.write("\ngenerate new keys...")
@@ -152,33 +146,34 @@ def exec_commands(message):
         skt.send(b"%d %s%s" % (len(signed), signed, str_public))
         console.write("public key is sent to the server\n")
 
-    elif command == "adduser":
-        messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "permission denied", "invalid usage! type '!help adduser'"]
-        message = status()
-        if message == None:
-            return
-        try:
-            console.write(messages[message])
-        except:
-            return
-    
-    elif command == "help":
-        messages = ["", "invalid usage! type '!help help'", "command '%s' is not defined" % " ".join(message.split(" ")[1:])]
-        message = status()
-        if message == None:
-            return
-        if message == 0:
-            send_message(randomString(10), skt, public_server, private_key)
-            return
-        try:
-            console.write(messages[message])
-        except:
-            return
+        
 
 
 def print_response(message):
-    pass #need to write...
-
+    try:
+        message = int(message)
+    except ValueError:
+        console.write(message)
+        return
+    if len(commands_queue) == 0:
+        console.write(message)
+        return
+    command = commands_queue.pop(0)
+    if command == "adduser":
+        messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "permission denied", "invalid usage! type '!help adduser'"]
+        try:
+            console.write(messages[message])
+        except:
+            console.write(message)
+    elif command == "help":
+        if message == 0:
+            return
+        try:
+            console.write(messages[message])
+        except:
+            console.write(message)
+            return
+        
 
 
 def message_with_len(message):
@@ -286,7 +281,6 @@ def get_message(skt):
     if not message:
         disconnect()
         return ''
-    # skt.send(randomString())
     message, sign_message = extract_messages(message)
     time.sleep(0.1)
     if not crypt_keys.check(sign_message, message, public_server):
@@ -297,7 +291,17 @@ def get_message(skt):
         message = message.decode()
     except:
         pass
-    return message
+    ext = "q"
+    if len(message) > 0:
+        ext = message[-1]
+        message = message[:-1]
+    if ext == "q":
+        return message
+    elif ext == "c":
+        print_response(message)
+        return get_message(skt)
+    else:
+        raise Exception('weird exention: %s' % ext)
 
 
 def send_message(message, skt, public_server, private_key):
@@ -317,12 +321,6 @@ def disconnect():
         skt.close()
     sys.exit(0)
 
-def randomString(stringLength=256):
-    letters = string.ascii_lowercase
-    return (''.join(random.choice(letters) for i in range(stringLength))).encode()
-
-
-
 def handle_user_message(message, skt):
     end_of_message = "q"
     command = ""
@@ -339,7 +337,7 @@ def handle_user_message(message, skt):
 
 def status():
     try:
-        message= get_message(skt)
+        message = get_message(skt)
         return int(message)
     except:
         return
