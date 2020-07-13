@@ -86,7 +86,7 @@ def six(string):
     return string
 
 def generate_code(public_key):
-    return  sha512(public_to_str(public_key)).hexdigest()[:8].encode()
-
+    code = sha512(public_to_str(public_key)).hexdigest()[:16]
+    return ':'.join("%s%s" % (code[i*2], code[i*2+1]) for i in range(len(code)//2)).encode()
 def verify_code(code, public_key):
     return generate_code(public_key) == code

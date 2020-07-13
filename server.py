@@ -120,11 +120,7 @@ def check_ip(ip):
 def handle_command(message, conn):
     global client_users
     user = client_users[conn]
-    arr = []
-    for m in message.replace("\t", " ").split(" "):
-        if m != '':
-            arr.append(m)
-    message = arr
+    message = message.split()
     command = message[0]
     params = message[1:]
     paramsnum = len(params)

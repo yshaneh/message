@@ -374,12 +374,13 @@ def connect():
         return
     console.write("get server public key")
     message = skt.recv(socket_message_size)
-    public_server = crypt_keys.str_to_public(message[8:])
+    code_size=23
+    public_server = crypt_keys.str_to_public(message[code_size:])
     if not public_server:
         console.write("server disconnected")
         return
     console.write("key received from server")
-    check_code(message[:8], public_server)
+    check_code(message[:code_size], public_server)
     console.write("send your public key to server")
     skt.send(str_public)
     console.write("key is sent to the server\n\n")
