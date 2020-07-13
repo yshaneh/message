@@ -171,5 +171,3 @@ def exit():
 
 def user_exist(username):
     return username in users
-
-    

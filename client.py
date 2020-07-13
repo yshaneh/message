@@ -92,6 +92,7 @@ class Console(IO):
             writing = False
 
     def exec(self):
+        _thread.start_new_thread(self.get_messages, ())
         inputs = [skt]
         while True and connect:
             read, write, error = select.select(inputs, [], [])
@@ -399,7 +400,6 @@ def identification():
         while not logged:
             logged = signup(console.read("username: "), console.read("password: "), console.read("confirm password: "))
     console.write("<you> ", end="")
-    _thread.start_new_thread(console.get_messages, ())
 
 
 
