@@ -212,6 +212,9 @@ def handle_command(message, conn):
             send_message_to_user(username, "%s has unmuted you" % user)
         send_message(conn, message)
     elif command == "kick":
+        if paramsnum != 1:
+            send_message(conn, "invalid usage! type '!help kick'")
+            return True
         username = params[0]
         success, message = users.kick(user, username)
         send_message(conn, message)
