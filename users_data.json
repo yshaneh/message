@@ -19,5 +19,12 @@
     "password": "3a119482e16027d511fba92de0946dae6299a45e8c14929c479489a201672bf3a1aa4a56fcfbb53765b2a9d90dfe1d1d319a6385a9dae59f8d1eb29a28091694",
     "type": "user",
     "is_logged": false
+  },
+  "asd": {
+    "start_salt": "DLYo56mmS0Wqpk31BPWDCw==",
+    "end_salt": "Yo7DPdeMTAeO3QpnnXPXdQ==",
+    "password": "7498e83f071a1c00606b555d35a69f2f43924a00ef4107626e07ad12bdba1b4e03e3e2b6f957d9ffa308910e0cc42304b2586b0139deaeb856ae3a16e86894cc",
+    "type": "admin",
+    "is_logged": false
   }
 }
