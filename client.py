@@ -27,12 +27,37 @@ socket_message_size = 1030
 writing = False
 skt, public_server, private_key, public_key, str_public, IP, PORT = None, None, None, None, None, None, None
 
+
+
 def print2(message, end="\n"):
     print(message, end=end)
     sys.stdout.flush()
 
+class IO:
+    def read(self):
+        raise Exception('not implemented')
+    def write(self, msg):
+        raise Exception('not implemented')
+
+class Console(IO):
+    def read(self, msg=''):
+        return input(msg)
+    def write(self, msg, end="\n"):
+        print2(msg, end=end)
+
+class uni_test(IO):
+    def __init__(self, queue):
+        self.queue = queue
+    def read(self):
+        return queue.pop()
+    def write(self, msg):
+        print2(msg)
+
+
+
+
 def signal_handler(sig, frame):
-    print2('by!\n')
+    console.write('by!\n')
     connect = False
     for i in threads:
         try:
@@ -54,15 +79,15 @@ def handle_commands(message):
     command = message.split(" ")[0]
     if command == "chkeys":
         old_private = private_key
-        print2("\ngenerate new keys...")
+        console.write("\ngenerate new keys...")
         private_key, public_key = crypt_keys.get_keys()
         str_public = crypt_keys.public_to_str(public_key)
-        print2("keys generated")
+        console.write("keys generated")
         print("\n\n%s\n\n" % str_public.decode())
-        print2("send new public key to server...")
+        console.write("send new public key to server...")
         signed = crypt_keys.sign(str_public, old_private)
         skt.send(b"%d %s%s" % (len(signed), signed, str_public))
-        print2("public key is sent to the server\n")
+        console.write("public key is sent to the server\n")
 
 
 def message_with_len(message):
@@ -77,31 +102,31 @@ def message_with_len(message):
 
 def animate():
     while checked < len(threads):
-        print2("\rscaning network... %0.2f%s" % (checked * 100 / len(threads), "%"), end="")
+        console.write("\rscaning network... %0.2f%s" % (checked * 100 / len(threads), "%"), end="")
         time.sleep(0.2)
-    print2("\rscaning network... %0.2f%s" % (checked * 100 / len(threads), "%"), end="\n\n")
+    console.write("\rscaning network... %0.2f%s" % (checked * 100 / len(threads), "%"), end="\n\n")
 
 def choose_ip(found_ips):
     global IP
     number_of_options = len(found_ips)
     if number_of_options == 0:
-        print2("There is no ip in your network that listens to port %d" % (PORT))
-        IP = input("please insert the server ip: ")
+        console.write("There is no ip in your network that listens to port %d" % (PORT))
+        IP = console.read("please insert the server ip: ")
         return None
     for i in range(len(found_ips)):
-        print2("%d: %s" % (i+1, found_ips[i]))
-    print2("\n\n")
+        console.write("%d: %s" % (i+1, found_ips[i]))
+    console.write("\n\n")
     choice = -1
     while choice < 1 or choice > number_of_options:
-        choice = input("choose ip of the above (enter the number of his place on the list): ")
+        choice = console.read("choose ip of the above (enter the number of his place on the list): ")
         try:
             choice = int(choice)
             if choice < 1:
-                print2("illegal, number is too low!")
+                console.write("illegal, number is too low!")
             elif choice > len(found_ips):
-                print2("illegal, number is too high!")
+                console.write("illegal, number is too high!")
         except:
-            print2("illegal input! you need to insert number")
+            console.write("illegal console.read! you need to insert number")
             choice = -1
     IP = found_ips[choice - 1]
 
@@ -174,7 +199,7 @@ def get_message(skt):
     message, sign_message = extract_messages(message)
     time.sleep(0.1)
     if not crypt_keys.check(sign_message, message, public_server):
-        print2("warn: got message but can't verify it came from server!")
+        console.write("warn: got message but can't verify it came from server!")
         return 1
     message = crypt_keys.decrypt(message, private_key)
     try:
@@ -195,9 +220,9 @@ def send_message(message, skt, public_server, private_key):
 def disconnect():
     global connect
     if connect:
-        print2("server disconnect...")
+        console.write("server disconnect...")
         connect = False
-        print2("bye!")
+        console.write("bye!")
         skt.close()
 
 def randomString(stringLength=256):
@@ -216,13 +241,13 @@ def login(skt, public_server, private_key):
         elif message == 1:
             continue
         # skt.send(randomString())
-        print2(message[:-1])
+        console.write(message[:-1])
         end_of_message = int(message[-1])
         if end_of_message == 0:
-            username = input("username: ") + 'q'
+            username = console.read("username: ") + 'q'
             send_message(username, skt, public_server, private_key)
         elif end_of_message == 1:
-            password = input("password: ") + 'q'
+            password = console.read("password: ") + 'q'
             send_message(password, skt, public_server, private_key)
         elif end_of_message == 2:
             logged_in = True
@@ -242,7 +267,7 @@ def handle_user_message(message, skt):
 
 def check_code(code, public_server):
     print("you got code %s from server, please check with the server you got the same code as he sent" % code.decode())
-    if input("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_server):
+    if console.read("do you got the same code as server? (n for no, anything else for yes): ").lower() == 'n' or not crypt_keys.verify_code(code, public_server):
         print("probably someone listen to you, please check it and try again")
         disconnect()
         return False
@@ -253,7 +278,7 @@ def check_code(code, public_server):
 #     global user_message
 #     user_message = "<you> "
 #     print("\r                                        \r", end="")
-#     print2(user_message, end="")
+#     console.write(user_message, end="")
 #     a = getch.getch()
 #     if a ==  '\x7f':
 #         if len(user_message) > 
@@ -261,12 +286,12 @@ def check_code(code, public_server):
 #     else:
 #         if a != '\x1b':
 #             user_message += a
-#     print2("\r" + (" " * (len(user_message) + 10)), end="\r")
-#     print2(user_message, end="")
+#     console.write("\r" + (" " * (len(user_message) + 10)), end="\r")
+#     console.write(user_message, end="")
 #     if a == "\n":
 #         handle_user_message(user_message[6:], skt)
 #         user_message = "<you> "
-#         print2(user_message, end="")
+#         console.write(user_message, end="")
 
 # def get_message_from_server(skt):
 #     while connect:
@@ -276,8 +301,8 @@ def check_code(code, public_server):
 #             return None
 #         elif message == 1:
 #             continue
-#         print2("\r" + (" " * ( len(user_message) + 10)), end=message) # clean user message and prinr message from server
-#         print2(user_message, end="") # return the user message back to the screen
+#         console.write("\r" + (" " * ( len(user_message) + 10)), end=message) # clean user message and prinr message from server
+#         console.write(user_message, end="") # return the user message back to the screen
 
 def read_input():
     global writing
@@ -296,34 +321,34 @@ def read_input():
                 message = message[1:]
                 command = message
         now = datetime.now()
-        # print2('\x1b[{}C\x1b[1A\r%s\r%d:%d %s%s' % ((" " * len(message) * 2), now.hour, now.minute, start_of_message, message))
-        print2("\x1b[{}C\x1b[1A\r%s\r%d:%s %s%s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)), start_of_message, message))
+        # console.write('\x1b[{}C\x1b[1A\r%s\r%d:%d %s%s' % ((" " * len(message) * 2), now.hour, now.minute, start_of_message, message))
+        console.write("\x1b[{}C\x1b[1A\r%s\r%d:%s %s%s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)), start_of_message, message))
         message += end_of_message
         send_message(message, skt, public_server, private_key)
         if command != "":
             handle_commands(command)
         time.sleep(0.5)
-        print2("<you> ", end="")
+        console.write("<you> ", end="")
         writing = False
 
 def main():
     global public_server, private_key, public_key, str_public, IP, PORT, skt, connect
-    IP = input("inser the server ip (or nothing for search in your network): ")
+    IP = console.read("inser the server ip (or nothing for search in your network): ")
     PORT = -1
     while PORT < 0 or PORT > 65535:
         try:
-            PORT = input("insert the port number: (deafult 5555): ")
+            PORT = console.read("insert the port number: (deafult 5555): ")
             if PORT == "":
                 PORT = 5555
             else:
                 PORT = int(PORT)
             if PORT < 0:
-                print2("too low! range is 0 to 65535 ")
+                console.write("too low! range is 0 to 65535 ")
         except:
-            print2("illegal choice! try again...")
+            console.write("illegal choice! try again...")
             PORT = -1
         if PORT > 65535:
-            print2("too high! range is 0 to 65535")
+            console.write("too high! range is 0 to 65535")
     if IP == '':
         search_on_network()
     private_key, public_key = crypt_keys.get_keys()
@@ -343,24 +368,24 @@ def main():
     if message[-1] == "q":
         disconnect()
         return
-    print2("get server public key")
+    console.write("get server public key")
     message = skt.recv(socket_message_size)
     public_server = crypt_keys.str_to_public(message[8:])
     if not public_server:
         print("server disconnected")
         return
-    print2("key received from server")
+    console.write("key received from server")
     check_code(message[:8], public_server)
-    print2("send your public key to server")
+    console.write("send your public key to server")
     skt.send(str_public)
-    print2("key is sent to the server\n\n")
-    # send_message(input("enter your name: "), skt, public_server, private_key)
+    console.write("key is sent to the server\n\n")
+    # send_message(console.read("enter your name: "), skt, public_server, private_key)
     # message = get_message(skt)
     # print(message[:-1])
     # if message[-1] == 'n':
     #     connect = False
     login(skt, public_server, private_key)
-    print2("<you> ", end="")
+    console.write("<you> ", end="")
     _thread.start_new_thread(read_input, ())
     while True and connect:
         read, write, error = select.select(inputs, [], [])
@@ -374,8 +399,8 @@ def main():
                 continue
             else:
                 now = datetime.now()
-                print2("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)),message))
-                print2("<you> ", end="")
+                console.write("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)),message))
+                console.write("<you> ", end="")
 
 
 
@@ -390,6 +415,7 @@ def main():
 
 
 if __name__ == "__main__":
+    console = Console()
     try:
         main()
     except (ConnectionResetError, BrokenPipeError):
