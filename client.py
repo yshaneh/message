@@ -150,30 +150,31 @@ def handle_commands(message):
 
 
 def print_response(message):
+    console.write("\r%s\r%s\n<you> " % (" " * 500, get_response(message)), end="")
+    
+
+def get_response(message):
     try:
         message = int(message)
     except ValueError:
-        console.write(message)
-        return
+        return message
     if len(commands_queue) == 0:
-        console.write(message)
-        return
+        return message
     command = commands_queue.pop(0)
     if command == "adduser":
         messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "permission denied", "invalid usage! type '!help adduser'"]
         try:
-            console.write(messages[message])
+            return messages[message]
         except:
-            console.write(message)
+            return message
     elif command == "help":
-        if message == 0:
-            return
+        messages = ["invalid usage! type '!help help'", "command is not defined"]
         try:
-            console.write(messages[message])
+            return messages[message]
         except:
-            console.write(message)
-            return
-        
+            return message
+    elif command == "chname":
+        messages = ["invalid usage! type '!help chname'", "permission denied", "user does not exist", "can't change to that name!", "username changed successfully"]
 
 
 def message_with_len(message):

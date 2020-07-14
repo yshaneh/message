@@ -130,23 +130,20 @@ def handle_command(message, conn):
     
     if command == "help":
         # message = "invalid usage! type '!help help'"
-        message = "1"
+        message = "0"
         ext = "c"
         if paramsnum == 0:
             message = "\n".join(commands)
             ext="q"
-            send_message(conn, "0", "c")
             # if not get_message(conn):
             #     remove(conn)
             #     return
         elif paramsnum == 1:
             if params[0] in help:
                 message = help[params[0]]
-                send_message(conn, "0", "c")
-                get_message(conn)
             else:
                 # message = "command '%s' is not defined" % params[0]
-                message = "2"
+                message = "1"
         send_message(conn, message, ext)
     
     elif command == "chkeys":
@@ -168,12 +165,13 @@ def handle_command(message, conn):
     
     elif command == "chname":
         if paramsnum != 2:
-            send_message(conn, "invalid usage! type '!help chname'")
+            # send_message(conn, "invalid usage! type '!help chname'")
+            send_message(conn, "0", "c")
             return True
         old_username = params[0]
         new_username = params[1]
         success, message, username = users.change_name(user, old_username, new_username)
-        send_message(conn, message)
+        send_message(conn, message, "c")
         exist, tmp = get_conn_by_username(old_username)
         if exist:
             client_users[tmp] = username
@@ -195,7 +193,7 @@ def handle_command(message, conn):
     
     elif command == "adduser":
         if paramsnum == 2:
-            params[2] = 'user'
+            params.append('user')
             paramsnum += 1
         if paramsnum != 3:
             send_message(conn, "7", "c")

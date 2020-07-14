@@ -125,14 +125,14 @@ def change_type(user, username, new_type):
 def change_name(user, old_username, new_username):
     if not is_admin(user):
         if user != old_username:
-            return False, "permission denied", old_username
+            return False, "1", old_username # "permission denied"
     if not user_exist(old_username):
-        return False, "user does not exist", old_username
+        return False, "2", old_username # "user does not exist"
     if new_username in invaild_names:
-        return False, "can't change to that name!", old_username
+        return False, "3", old_username # "can't change to that name!"
     users[new_username] = users.pop(old_username)
     save()
-    return True, "username changed successfully", new_username
+    return True, "4", new_username # "username changed successfully"
 
 
 def mute(user, username):
