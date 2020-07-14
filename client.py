@@ -163,19 +163,17 @@ def get_response(message):
     command = commands_queue.pop(0)
     if command == "adduser":
         messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "permission denied", "invalid usage! type '!help adduser'"]
-        try:
-            return messages[message]
-        except:
-            return message
     elif command == "help":
         messages = ["invalid usage! type '!help help'", "command is not defined"]
-        try:
-            return messages[message]
-        except:
-            return message
     elif command == "chname":
         messages = ["invalid usage! type '!help chname'", "permission denied", "user does not exist", "can't change to that name!", "username changed successfully"]
-
+    else:
+        return "unknown command '%s'" % command
+        
+    try:
+        return messages[message]
+    except:
+        return message
 
 def message_with_len(message):
     try:
