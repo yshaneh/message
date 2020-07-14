@@ -108,18 +108,19 @@ def close():
 
 def change_type(user, username, new_type):
     global users
-    last_type = users[username]["type"]
     if not is_admin(user):
-        return False, "permission denied"
+        # return False, "permission denied"
+        return False, "1"
     if not user_exist(username):
-        return False, "user does not exist"
+        # return False, "user does not exist"
+        return False, "2"
     if new_type not in types:
-        return False, "invaild type!"
-    if new_type == last_type:
-        return False, "the type of user '%s' is already %s" % (username, new_type)
+        # return False, "invaild type!"
+        return False, "3"
     users[username]["type"] = new_type
     save()
-    return True, "the type of user '%s' has been successfully changed from '%s' to '%s'" % (username, last_type, new_type)
+    # return True, "user type changed successfully"
+    return True, "4"
 
 
 def change_name(user, old_username, new_username):
@@ -137,32 +138,44 @@ def change_name(user, old_username, new_username):
 
 def mute(user, username):
     if not is_admin(user):
-        return False, "permission denied"
+        # return False, "permission denied"
+        return False, "1"
     if not user_exist(username):
-        return False, "user does not exist"
+        # return False, "user does not exist"
+        return False, "2"
     if users[username]["is_logged"]:
-        return True, username + " muted successfully!"
-    return False, "user is not connected"
+        # return True, "user muted successfully!"
+        return True, "3"
+    # return False, "user is not connected"
+    return False, "4"
     
 
 def unmute(user, username):
     if not is_admin(user):
-        return False, "permission denied"
+        # return False, "permission denied"
+        return False, "0"
     if not user_exist(username):
-        return False, "user does not exist"
+        # return False, "user does not exist"
+        return False, "1"
     if users[username]["is_logged"]:
-        return True, "%s unmuted successfully" % username
-    return False, "user is not connected"
+        # return True, "user unmuted successfully" 
+        return True, "2"
+    # return False, "user is not connected"
+    return False, "3"
 
 def kick(user, username):
     if not is_admin(user):
-        return False, "permission denied"
+        # return False, "permission denied"
+        return False, "1"
     if not user_exist(username):
-        return False, "user does not exist"
+        # return False, "user does not exist"
+        return False, "2"
     if users[username]["is_logged"]:
         logout(username)
-        return True, "%s kicked successfully" % username
-    return False, "user is not connected"
+        # return True, "user kicked successfully"
+        return True, "3"
+    # return False, "user is not connected"
+    return False, "4"
 
 def exit():
     for user in users:

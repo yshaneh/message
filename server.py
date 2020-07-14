@@ -180,11 +180,12 @@ def handle_command(message, conn):
     
     elif command == "chtype":
         if paramsnum != 2:
-            send_message(conn, "invalid usage! type '!help chtype'")
+            # send_message(conn, "invalid usage! type '!help chtype'")
+            send_message(conn, "0", "c")
         username = params[0]
         new_type = params[1]
         success, message = users.change_type(user, username, new_type)
-        send_message(conn, message)
+        send_message(conn, message, "c")
         exist, conn_of_user = get_conn_by_username(username)
         if exist:
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
@@ -206,14 +207,15 @@ def handle_command(message, conn):
     
     elif command == "mute":
         if paramsnum != 1:
-            send_message(conn, "invalid usage! type '!help mute'")
+            # send_message(conn, "invalid usage! type '!help mute'")
+            send_message(conn, "0", "c")
             return True
         username = params[0]
         success, message = users.mute(user, username)
         if success:
             users_muted[username] = True
             send_message_to_user(username, "%s has muted you" % user)
-        send_message(conn, message)
+        send_message(conn, message, "c")
     
     elif command == "unmute":
         username = params[0]
@@ -225,11 +227,12 @@ def handle_command(message, conn):
     
     elif command == "kick":
         if paramsnum != 1:
-            send_message(conn, "invalid usage! type '!help kick'")
+            # send_message(conn, "invalid usage! type '!help kick'")
+            send_message(conn, "0", "c")
             return True
         username = params[0]
         success, message = users.kick(user, username)
-        send_message(conn, message)
+        send_message(conn, message, "c")
         if success:
             reason =  "%s kicked %s" % (user, username)
             exist, c = get_conn_by_username(username)
@@ -247,7 +250,8 @@ def handle_command(message, conn):
         elif paramsnum == 1:
             if params[0] == "--ip":
                 if not users.is_admin(client_users[conn]):
-                    send_message(conn, "permission denied! only admin can use the --ip option")
+                    # send_message(conn, "permission denied! only admin can use the --ip option")
+                    send_message(conn, "0", "c")
                     return True
                 message = ""
                 for c in client_users:
@@ -259,69 +263,86 @@ def handle_command(message, conn):
                 if exist:
                     send_message(conn, "[%s] %s" % (users.users[params[0]]['type'], params[0]))
                 else:
-                    message = "invavild usage! type '!help users'"
+                    # message = "invavild usage! type '!help users'"
+                    message = "1"
                     if params[0][0] != "-":
                         if not users.user_exist(params[0]):
-                            message = "user %s does not exsit!" % params[0]
+                            # message = "user does not exsit!"
+                            message = "2"
                         else:
-                            message = "user %s is not connect to server" % params[0]
-                    send_message(conn, message)
+                            # message = "user is not connect to server"
+                            message = "3"
+                    send_message(conn, message, "c")
                     return True
         elif paramsnum == 2:
-            message = "invalid usage! type '!help users'"
+            # message = "invalid usage! type '!help users'"
+            message = "1"
             try:
                 index = params.index("--ip")
             except ValueError:
-                send_message(conn, message)
+                send_message(conn, message, "c")
                 return True
             if not users.is_admin(user):
-                send_message(conn, "permission denied! only admin can use the --ip option")
+                # send_message(conn, "permission denied! only admin can use the --ip option")
+                send_message(conn, "1", "c")
                 return True
             username = params[1 - index]
             exist, c = get_conn_by_username(username)
             if not exist:
                 if username[0] != "-":
                     if not users.user_exist(username):
-                        message = "user %s does not exsit!" % username
+                        # message = "user does not exsit!"
+                        message = "2"
                     else:
-                        message = "user %s is not connect to server" % username
-                send_message(conn, message)
+                        # message = "user is not connect to server"
+                        message = "3"
+                send_message(conn, message, "c")
                 return True
             send_message(conn, "[%s] %s : %s" % (users.users[username]['type'], username, client_ip[c]))
         else:
-            send_message(conn, "invalid usage! type '!help users'")
+            # send_message(conn, "invalid usage! type '!help users'")
+            send_message(conn, "1", "c")
     
     elif command == "ban":
         if not users.is_admin(user):
-            send_message(conn, "permission denied! only admin can ban")
+            # send_message(conn, "permission denied! only admin can ban")
+            send_message(conn, "0", "c")
             return True
         ip = params[0]
-        message = "invalid usage! type '!help ban'"
+        # message = "invalid usage! type '!help ban'"
+        message = "1"
         if paramsnum == 1:
             if check_ip(ip):
                 if users.is_admin(user):
                     blacklist.append(ip)
-                    message = "ip '%s' banned successfully" % ip
+                    # message = "ip banned successfully"
+                    message = "2"
             else:
-                message  = "invalid ip '%s'" % ip
-        send_message(conn, message)
+                # message  = "invalid ip!"
+                message = "3"
+        send_message(conn, message, "c")
     
     elif command == "unban":
         if not users.is_admin(user):
-            send_message(conn, "permission denied! only admin can unban")
+            # send_message(conn, "permission denied! only admin can unban")
+            send_message(conn, "0", "c")
             return True
         ip = params[0]
-        message = "invalid usage! type '!help ban'"
+        # message = "invalid usage! type '!help unban'"
+        message = "1"
         if paramsnum == 1:
             if check_ip(ip):
                 if ip in blacklist:
                     blacklist.remove(ip)
-                    message = "ip '%s' unbanned successfully" % ip
+                    # message = "ip unbanned successfully"
+                    message = "2"
                 else:
-                    message = "ip '%s' is not banned!" % ip
+                    # message = "ip is not banned!"
+                    message = "3"
             else:
-                message = "invalid ip '%s'" % ip
-        send_message(conn, message)
+                # message = "invalid ip!"
+                message = "4"
+        send_message(conn, message, "c")
     return True
 
 
