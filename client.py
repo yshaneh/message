@@ -25,6 +25,19 @@ writing = False
 skt, public_server, private_key, public_key, str_public, IP, PORT = None, None, None, None, None, None, None
 commands_queue = []
 
+RESPONSES = {
+    "adduser" :  ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "permission denied", "invalid usage! type '!help adduser'"],
+    "help" : ["invalid usage! type '!help help'", "command is not defined"],
+    "chname" : ["invalid usage! type '!help chname'", "permission denied", "user does not exist", "can't change to that name!", "username changed successfully"],
+    "chtype" : ["invalid usage! type '!help chtype'", "permission denied", "user does not exist", "invaild type!", "user type changed successfully"],
+    "mute" : ["invalid usage! type '!help mute'", "permission denied", "user does not exist", "user muted successfully!", "user is not connected"],
+    "unmute" : ["permission denied", "user does not exist", "user unmuted successfully", "user is not connected"],
+    "kick" : ["invalid usage! type '!help kick'", "permission denied", "user does not exist", "user kicked successfully", "user is not connected"],
+    "users" : ["permission denied! only admin can use the --ip option", "invavild usage! type '!help users'", "user does not exsit!", "user is not connect to server"],
+    "ban" : ["permission denied! only admin can ban", "invalid usage! type '!help ban'", "ip banned successfully", "invalid ip!"],
+    "unban" : ["permission denied! only admin can unban", "invalid usage! type '!help unban'", "ip unbanned successfully", "ip is not banned!", "invalid ip!"]
+}
+
 
 
 class IO:
@@ -162,43 +175,15 @@ def get_response(message):
         return "Error! commands queue is empty"
     command = commands_queue.pop(0)
 
-    if command == "adduser":
-        messages = ["username can only include numbers and letters", "username is already exists", "can't creat user with that name!", "user created successfully", "error occurred...", "Invaild type!", "permission denied", "invalid usage! type '!help adduser'"]
-    
-    elif command == "help":
-        messages = ["invalid usage! type '!help help'", "command is not defined"]
-    
-    elif command == "chname":
-        messages = ["invalid usage! type '!help chname'", "permission denied", "user does not exist", "can't change to that name!", "username changed successfully"]
-    
-    elif command == "chtype":
-        messages = ["invalid usage! type '!help chtype'", "permission denied", "user does not exist", "invaild type!", "user type changed successfully"]
-    
-    elif command == "mute":
-        messages = ["invalid usage! type '!help mute'", "permission denied", "user does not exist", "user muted successfully!", "user is not connected"]
 
-    elif command == "unmute":
-        messages = ["permission denied", "user does not exist", "user unmuted successfully", "user is not connected"]
-
-    elif command == "kick":
-        messages = ["invalid usage! type '!help kick'", "permission denied", "user does not exist", "user kicked successfully", "user is not connected"]
-
-    elif command == "users":
-        messages = ["permission denied! only admin can use the --ip option", "invavild usage! type '!help users'", "user does not exsit!", "user is not connect to server"]
-
-    elif command == "ban":
-        messages = ["permission denied! only admin can ban", "invalid usage! type '!help ban'", "ip banned successfully", "invalid ip!"]
-
-    elif command == "unban":
-        messages = ["permission denied! only admin can unban", "invalid usage! type '!help unban'", "ip unbanned successfully", "ip is not banned!", "invalid ip!"]
-        
+    if command in RESPONSES:
+        try:
+            return RESPONSES[command][message]
+        except:
+            return "Error! got response '%s' to unknow command: '%s'" % (message, command)
     else:
         return "unknown command '%s'" % command
-        
-    try:
-        return messages[message]
-    except:
-        return message
+
 
 
 
