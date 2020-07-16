@@ -122,7 +122,7 @@ def handle_command(message, conn):
     if command not in commands:
         send_message(conn, "invalid command! type '!help'")
         return True
-    
+
     if command == "help":
         # message = "invalid usage! type '!help help'"
         message = "0"
@@ -140,9 +140,9 @@ def handle_command(message, conn):
                 # message = "command '%s' is not defined" % params[0]
                 message = "1"
         send_message(conn, message, ext)
-    
+
     elif command == "chkeys":
-        temp_message = conn.recv(socket_message_size * 10) 
+        temp_message = conn.recv(socket_message_size * 10)
         if temp_message:
                 print("get public key from %s" % client_ip[conn])
                 temp_message = temp_message
@@ -157,7 +157,7 @@ def handle_command(message, conn):
                 return True
         else:
             return False
-    
+
     elif command == "chname":
         if paramsnum != 2:
             # send_message(conn, "invalid usage! type '!help chname'")
@@ -172,7 +172,7 @@ def handle_command(message, conn):
             client_users[tmp] = username
             if success:
                 send_message_to_user(username, "%s change your name to %s" % (user, username))
-    
+
     elif command == "chtype":
         if paramsnum != 2:
             # send_message(conn, "invalid usage! type '!help chtype'")
@@ -186,7 +186,7 @@ def handle_command(message, conn):
             send_message(conn_of_user, "%s change your type to %s" % (user, new_type))
             if success:
                 send_message_to_user(username, "%s change your type to %s" % (client_users[conn], new_type))
-    
+
     elif command == "adduser":
         if paramsnum == 2:
             params.append('user')
@@ -199,7 +199,7 @@ def handle_command(message, conn):
         usertype = params[2]
         success, message = users.create_user(user, username, password, usertype)
         send_message(conn, message, "c")
-    
+
     elif command == "mute":
         if paramsnum != 1:
             # send_message(conn, "invalid usage! type '!help mute'")
@@ -211,7 +211,7 @@ def handle_command(message, conn):
             users_muted[username] = True
             send_message_to_user(username, "%s has muted you" % user)
         send_message(conn, message, "c")
-    
+
     elif command == "unmute":
         username = params[0]
         success, message = users.unmute(user, username)
@@ -219,7 +219,7 @@ def handle_command(message, conn):
             users_muted[username] = False
             send_message_to_user(username, "%s has unmuted you" % user)
         send_message(conn, message)
-    
+
     elif command == "kick":
         if paramsnum != 1:
             # send_message(conn, "invalid usage! type '!help kick'")
@@ -234,7 +234,7 @@ def handle_command(message, conn):
             if exist:
                 send_message_to_user(username, "%s has kicked you" % user)
                 remove(c, reason , reason)
-    
+
     elif command == "users":
         if paramsnum == 0:
             message = ""
@@ -297,7 +297,7 @@ def handle_command(message, conn):
         else:
             # send_message(conn, "invalid usage! type '!help users'")
             send_message(conn, "1", "c")
-    
+
     elif command == "ban":
         if not users.is_admin(user):
             # send_message(conn, "permission denied! only admin can ban")
@@ -316,7 +316,7 @@ def handle_command(message, conn):
                 # message  = "invalid ip!"
                 message = "3"
         send_message(conn, message, "c")
-    
+
     elif command == "unban":
         if not users.is_admin(user):
             # send_message(conn, "permission denied! only admin can unban")
@@ -405,7 +405,12 @@ def extract_messages(message_and_sign, conn):
         message_and_sign = message_and_sign.encode()
     except:
         pass
-    tmp_len = int(message_and_sign[:3]) + 3
+    try:
+        tmp_len = int(message_and_sign[:3]) + 3
+    except ValueError:
+        remove(conn, "error while try to extract client with address: %s" % clients_address[conn])
+    while len(message_and_sign) < tmp_len * 2:
+        message_and_sign += conn.recv(tmp_len * 2)
     message = message_and_sign[3:tmp_len]
     message_and_sign = message_and_sign[tmp_len:]
     tmp_sign_len = int(message_and_sign[:3]) + 3
@@ -423,7 +428,6 @@ def get_message(conn):
             message = conn.recv(socket_message_size)
         if message:
             message, sign_message = extract_messages(message, conn)
-            # conn.send(randomString())
             time.sleep(0.5)
             if crypt_keys.check(sign_message, message, clients_keys[conn]):
                 return crypt_keys.decrypt(message, private_key[conn]).decode()
@@ -545,13 +549,13 @@ def server_messages():
             print("\033[1A\033[K<you> %s" % server_message)
             server_message = "<server> " + server_message
             send_to_everybody(server_message, None)
-    
+
 def new_connection(conn,addr):
     try:
         handle_client(conn, addr)
     except (BrokenPipeError, ConnectionResetError):
         remove(conn)
-        
+
 
 
 def main():
