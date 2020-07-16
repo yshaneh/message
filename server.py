@@ -8,12 +8,7 @@ import sys
 import select
 import signal
 import time
-import random
 import string
-
-# def randomString(stringLength=256):
-#     letters = string.ascii_lowercase
-#     return (''.join(random.choice(letters) for i in range(stringLength))).encode()
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
