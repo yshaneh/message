@@ -109,7 +109,7 @@ class Console(IO):
             read, write, error = select.select(inputs, [], [])
             message = ""
             for inp in read:
-                message = get_message(inp)
+                message = get_message()
                 if message == '':
                     disconnect()
                     break
@@ -274,19 +274,27 @@ def extract_messages(message_and_sign):
         message_and_sign = message_and_sign.encode()
     except:
         pass
-    tmp_len = int(message_and_sign[:3]) + 3
-    message = message_and_sign[3:tmp_len]
-    message_and_sign = message_and_sign[tmp_len:]
-    tmp_len = int(message_and_sign[:3]) + 3
-    sign_message = message_and_sign[3:tmp_len]
-    message_and_sign = message_and_sign[tmp_len:]
+    while not b' ' in message_and_sign:
+        tmp = skt.recv(10)
+        if not tmp:
+            disconnect(conn, "error while trying to get message from server")
+            return False
+        message_and_sign += tmp
+    splited = message_and_sign.split(b' ')
+    try:
+        tmp_len = int(splited)[0])
+    except ValueError:
+        disconnect("error while trying to get message from server")
+    message_and_sign =  b' '.join(splited[1:])
+    while len(message_and_sign) < tmp_len * 2:
+        tmp = skt.recv(tmp_len)
+    message = message_and_sign[:tmp_len]
+    sign_message = message_and_sign[tmp_len:tmp_len*2]
+    message_and_sign = message_and_sign[tmp_len*2:]
     queue = message_and_sign
     return (message, sign_message)
 
-
-
-
-def get_message(skt):
+def get_message():
     if queue:
         message = queue
     else:
@@ -296,7 +304,6 @@ def get_message(skt):
         return ''
     message, sign_message = extract_messages(message)
     if not message:
-        remove(conn, "error while ")
         return ''
     if not crypt_keys.check(sign_message, message, public_server):
         console.write("warn: got message but can't verify it came from server!")
@@ -314,7 +321,7 @@ def get_message(skt):
         return message
     elif ext == "c":
         print_response(message)
-        return get_message(skt)
+        return get_message()
     else:
         raise Exception('weird exention: %s' % ext)
 
@@ -325,12 +332,11 @@ def send_message(message, skt, public_server, private_key):
     message = message_with_len(message)
     sign_message = message_with_len(sign_message)
     skt.send(message + sign_message)
-    # nothing = skt.recv(socket_message_size)
 
-def disconnect():
+def disconnect(reason="server disconnect..."):
     global connect
     if connect:
-        console.write("server disconnect...")
+        console.write(reason)
         connect = False
         console.write("bye!")
         skt.close()
@@ -352,7 +358,7 @@ def handle_user_message(message, skt):
 
 def status():
     try:
-        message = get_message(skt)
+        message = get_message()
         return int(message)
     except:
         return
@@ -389,17 +395,6 @@ def check_code(code, public_server):
         disconnect()
         return False
     return True
-
-
-
-
-
-def main():
-    console.choose_ip()
-    connect()
-    identification()
-    console.exec()
-
 
 def connect():
     global  skt, connect, public_server, private_key, public_key, str_public
@@ -441,11 +436,16 @@ def identification():
             logged = login(console.read("username: "), console.read("password: "))
     else:
         send_message("sign up", skt, public_server, private_key)
-        get_message(skt)
+        get_message()
         while not logged:
             logged = signup(console.read("username: "), console.read("password: "), console.read("confirm password: "))
     console.write("<you> ", end="")
 
+def main():
+    console.choose_ip()
+    connect()
+    identification()
+    console.exec()
 
 
 if __name__ == "__main__":

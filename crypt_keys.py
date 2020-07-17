@@ -7,10 +7,12 @@ from cryptography.hazmat.backends.openssl.rsa import InvalidSignature
 from hashlib import sha512
 
 
+key_size = 4096
+
 def get_keys():
     private_key = rsa.generate_private_key(
         public_exponent=65537,
-        key_size=4096,
+        key_size=key_size,
         backend=default_backend()
     )
     public_key = private_key.public_key()

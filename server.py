@@ -395,8 +395,8 @@ def message_with_len(message):
         message = message.encode()
     except:
         pass
-    str_len = str(len(message))
-    return ("0" * (3 - len(str_len))).encode() + str_len.encode() + message
+    str_len = str(len(message)).encode()
+    return b'%s%s %s' % ((b'0' * (3 - len(str_len))), str_len, message)
 
 
 def extract_messages(message_and_sign, conn):
@@ -405,8 +405,15 @@ def extract_messages(message_and_sign, conn):
         message_and_sign = message_and_sign.encode()
     except:
         pass
+    while not b' ' in message_and_sign:
+        tmp = conn.recv(10)
+        if not tmp:
+            remove(conn, "error while trying to get message from client '%s'" % clients_address[conn])
+            return False, False
+        message_and_sign += tmp
+    splited = message_and_sign,split(b' ')
     try:
-        tmp_len = int(message_and_sign[:3]) + 3
+        tmp_len = int(splited[0])
     except ValueError:
         remove(conn, "error while try to extract client with address: %s" % clients_address[conn])
         return False, False
@@ -415,13 +422,12 @@ def extract_messages(message_and_sign, conn):
         if tmp:
             message_and_sign += tmp
         else:
-            remove(conn)
+            remove(conn, "error while trying to get message from client '%s'" % clients_address[conn])
             return False, False
-    message = message_and_sign[3:tmp_len]
-    message_and_sign = message_and_sign[tmp_len:]
-    tmp_sign_len = int(message_and_sign[:3]) + 3
-    sign_message = message_and_sign[3:tmp_sign_len]
-    message_and_sign = message_and_sign[tmp_sign_len:]
+    message_and_sign = b' '.join(splited[1:])
+    message = message_and_sign[:tmp_len]
+    sign_message = message_and_sign[tmp_len:tmp_sign_len*2]
+    message_and_sign = message_and_sign[tmp_sign_len*2:]
     client_queue[conn] = message_and_sign
     return (message, sign_message)
 
@@ -539,7 +545,7 @@ def send_message(conn, message, ext="q"):
     message = crypt_keys.encrypt(message, clients_keys[conn])
     sign_message = crypt_keys.sign(message, private_key[conn])
     message = message_with_len(message)
-    sign_message = message_with_len(sign_message)
+    sign_message = sign_message
     conn.send(message + sign_message)
     # nothing = conn.recv(socket_message_size)
     time.sleep(0.1)
