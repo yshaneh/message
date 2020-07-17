@@ -409,8 +409,14 @@ def extract_messages(message_and_sign, conn):
         tmp_len = int(message_and_sign[:3]) + 3
     except ValueError:
         remove(conn, "error while try to extract client with address: %s" % clients_address[conn])
+        return False, False
     while len(message_and_sign) < tmp_len * 2:
-        message_and_sign += conn.recv(tmp_len * 2)
+        tmp = conn.recv(tmp_len * 2)
+        if tmp:
+            message_and_sign += tmp
+        else:
+            remove(conn)
+            return False, False
     message = message_and_sign[3:tmp_len]
     message_and_sign = message_and_sign[tmp_len:]
     tmp_sign_len = int(message_and_sign[:3]) + 3
@@ -428,7 +434,10 @@ def get_message(conn):
             message = conn.recv(socket_message_size)
         if message:
             message, sign_message = extract_messages(message, conn)
+            if message == False:
+                return False
             time.sleep(0.5)
+            if
             if crypt_keys.check(sign_message, message, clients_keys[conn]):
                 return crypt_keys.decrypt(message, private_key[conn]).decode()
             else:
@@ -523,7 +532,7 @@ def handle_client(conn, addr):
                 message = name + message[:-1]
                 print(message)
                 send_to_everybody(message, conn)
-        elif message == '':
+        elif message == '' or message == False:
             return None
 
 
