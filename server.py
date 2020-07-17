@@ -461,13 +461,24 @@ def handle_client(conn, addr):
     temp_message = conn.recv(socket_message_size)
     if temp_message:
         print("get public key from %s:%d" % (addr[0], addr[1]))
-        clients_keys[conn] = crypt_keys.str_to_public(temp_message)
     else:
-        reason = ""
-        if conn in client_users:
-            reason = "%s disconnected" % client_users[conn]
-        remove(conn, addr[0] + " disconnected", reason)
-        return None
+        remove(conn, addr[0] + " disconnected")
+        return
+
+    if not b' ' in temp_message:
+        remove(conn, "error while trying to get public key from %s" % addr[0])
+        return
+    len = temp_message.split(b' ')[0]
+    try:
+        len = int(len)
+    except ValueError:
+        remove(conn)
+        return
+    temp_message = " ".join(temp_message.split(b' ')[1:])
+    while len(temp_message) < len:
+        temp_message += conn.recv(socket_message_size)
+    clients_keys[conn] = crypt_keys.str_to_public(temp_message)
+
     print("key recived")
     # name = get_message(conn)
     # accept = input("%s try to connect to server in name '%s', do aprove? ('y' for yes and everythingelse for no): " %  (clients_address[conn], name))
