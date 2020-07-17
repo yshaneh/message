@@ -20,7 +20,7 @@ checked = 0
 connect = False
 user_message = ""
 queue = ""
-socket_message_size = 1030
+socket_message_size = 103
 writing = False
 skt, public_server, private_key, public_key, str_public, IP, PORT = None, None, None, None, None, None, None
 commands_queue = []
@@ -120,10 +120,6 @@ class Console(IO):
                     self.write("\r%s\r%d:%s %s" % ((" " * 100), now.hour, "%d%d" % (math.floor(now.minute/10) , (now.minute % 10)) ,message))
                     self.write("<you> ", end="")
 
-
-
-
-
 def signal_handler(sig, frame):
     console.write('by!\n')
     connect = False
@@ -139,9 +135,6 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
-
-
-
 
 def handle_commands(message):
     global private_key, public_key, str_public, commands_queue
@@ -159,12 +152,8 @@ def handle_commands(message):
         skt.send(b"%d %s%s" % (len(signed), signed, str_public))
         console.write("public key is sent to the server\n")
 
-
-
-
 def print_response(message):
     console.write("\r%s\r%s\n<you> " % (" " * 500, get_response(message)), end="")
-
 
 def get_response(message):
     try:
@@ -184,11 +173,6 @@ def get_response(message):
     else:
         return "unknown command '%s'" % command
 
-
-
-
-
-
 def message_with_len(message):
     try:
         message = message.encode()
@@ -196,8 +180,6 @@ def message_with_len(message):
         pass
     str_len = str(len(message)).encode()
     return b'%s%s %s' % (b'0' * (3 - len(str_len)), str_len, message)
-
-
 
 def animate():
     while checked < len(threads):
@@ -228,7 +210,6 @@ def choose_ip(found_ips):
             console.write("illegal input! you need to insert number")
             choice = -1
     IP = found_ips[choice - 1]
-
 
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -415,6 +396,30 @@ def connect():
         return
     console.write("get server public key")
     message = skt.recv(socket_message_size)
+    if not message:
+        disconnect("error while trying to get public key from server")
+        return
+    while not b' ' in message:
+        tmp = skt.recv(10)
+        if tmp:
+            message += tmp
+        else:
+            disconnect()
+            return
+    length = message.split(b' ')
+    try:
+        length = int(length)
+    except ValueError:
+        disconnect("error while trying to get public key from server")
+        return
+    message = b' '.join(message.split(b' ')[1:])
+    while len(message) < length:
+        tmp = skt.recv(socket_message_size)
+        if tmp:
+            message += tmp
+        else:
+            disconnect()
+            return
     code_size=23
     public_server = crypt_keys.str_to_public(message[code_size:])
     if not public_server:

@@ -468,7 +468,8 @@ def handle_client(conn, addr):
     else:
         conn.send(b'welcome to my message server\n\ne')
     print("send public key  and code to %s:%d" % (addr[0], addr[1]))
-    conn.send(code + crypt_keys.public_to_str(public_key[conn]))
+    combined = b'%s%s' % (code, crypt_keys.public_to_str(public_key[conn]))
+    conn.send(b'%d %s' % (len(combined), combined))
     print("key is sent")
     print("send to the client code: %s, please check with the clients he got the same code." % code.decode())
     temp_message = conn.recv(socket_message_size)
@@ -478,19 +479,13 @@ def handle_client(conn, addr):
         remove(conn, addr[0] + " disconnected")
         return
 
-    for i in range(10):
-        if not b' ' in temp_message:
-            tmp = conn.recv(10)
-            if tmp:
-                temp_message += tmp
-            else:
-                remove(conn)
-                return
+    while not b' ' in temp_message:
+        tmp = conn.recv(10)
+        if tmp:
+            temp_message += tmp
         else:
-            break
-    if not b' ' in temp_message:
-        remove(conn, "error while trying to get public key from %s" % addr[0])
-        return
+            remove(conn)
+            return
     length = temp_message.split(b' ')[0]
     try:
         length = int(length)
