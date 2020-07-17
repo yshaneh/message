@@ -411,7 +411,7 @@ def extract_messages(message_and_sign, conn):
             remove(conn, "error while trying to get message from client '%s'" % clients_address[conn])
             return False, False
         message_and_sign += tmp
-    splited = message_and_sign,split(b' ')
+    splited = message_and_sign.split(b' ')
     try:
         tmp_len = int(splited[0])
     except ValueError:
