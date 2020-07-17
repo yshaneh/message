@@ -263,7 +263,7 @@ def extract_messages(message_and_sign):
         message_and_sign += tmp
     splited = message_and_sign.split(b' ')
     try:
-        tmp_len = int(splited)[0])
+        tmp_len = int(splited)[0]
     except ValueError:
         disconnect("error while trying to get message from server")
     message_and_sign =  b' '.join(splited[1:])
