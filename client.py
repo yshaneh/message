@@ -406,9 +406,9 @@ def connect():
         else:
             disconnect()
             return
-    length = message.split(b' ')
+    length = message.split(b' ').decode()
     try:
-        length = int(length)
+        length = int(length
     except ValueError:
         disconnect("error while trying to get public key from server")
         return
