@@ -465,6 +465,16 @@ def handle_client(conn, addr):
         remove(conn, addr[0] + " disconnected")
         return
 
+    for i in range(10):
+        if not b' ' in temp_message:
+            tmp = conn.recv(10)
+            if tmp:
+                temp_message += tmp
+            else:
+                remove(conn)
+                return
+        else:
+            break
     if not b' ' in temp_message:
         remove(conn, "error while trying to get public key from %s" % addr[0])
         return
@@ -476,7 +486,12 @@ def handle_client(conn, addr):
         return
     temp_message = b' '.join(temp_message.split(b' ')[1:])
     while len(temp_message) < length:
-        temp_message += conn.recv(socket_message_size)
+        tmp = conn.recv(socket_message_size)
+        if tmp:
+            temp_message += tmp
+        else:
+            remove(conn)
+            return
     clients_keys[conn] = crypt_keys.str_to_public(temp_message)
 
     print("key recived")
