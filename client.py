@@ -406,7 +406,7 @@ def connect():
         else:
             disconnect()
             return
-    length = message.split(b' ').decode()
+    length = message.split(b' ')[0].decode()
     try:
         length = int(length)
     except ValueError:
