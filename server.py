@@ -470,7 +470,7 @@ def handle_client(conn, addr):
         return
     length = temp_message.split(b' ')[0]
     try:
-        length = int(len)
+        length = int(length)
     except ValueError:
         remove(conn)
         return
