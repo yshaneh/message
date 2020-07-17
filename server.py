@@ -436,8 +436,6 @@ def get_message(conn):
             message, sign_message = extract_messages(message, conn)
             if message == False:
                 return False
-            time.sleep(0.5)
-            if
             if crypt_keys.check(sign_message, message, clients_keys[conn]):
                 return crypt_keys.decrypt(message, private_key[conn]).decode()
             else:
