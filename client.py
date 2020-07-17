@@ -295,7 +295,9 @@ def get_message(skt):
         disconnect()
         return ''
     message, sign_message = extract_messages(message)
-    time.sleep(0.1)
+    if not message:
+        remove(conn, "error while ")
+        return ''
     if not crypt_keys.check(sign_message, message, public_server):
         console.write("warn: got message but can't verify it came from server!")
         return 1
