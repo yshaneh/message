@@ -474,7 +474,7 @@ def handle_client(conn, addr):
     except ValueError:
         remove(conn)
         return
-    temp_message = " ".join(temp_message.split(b' ')[1:])
+    temp_message = b' '.join(temp_message.split(b' ')[1:])
     while len(temp_message) < len:
         temp_message += conn.recv(socket_message_size)
     clients_keys[conn] = crypt_keys.str_to_public(temp_message)
