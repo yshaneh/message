@@ -427,7 +427,7 @@ def extract_messages(message_and_sign, conn):
     message_and_sign = b' '.join(splited[1:])
     message = message_and_sign[:tmp_len]
     sign_message = message_and_sign[tmp_len:tmp_sign_len*2]
-    message_and_sign = message_and_sign[tmp_sign_len*2:]
+    message_and_sign = message_and_sign[tmp_len*2:]
     client_queue[conn] = message_and_sign
     return (message, sign_message)
 
