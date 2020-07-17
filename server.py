@@ -468,14 +468,14 @@ def handle_client(conn, addr):
     if not b' ' in temp_message:
         remove(conn, "error while trying to get public key from %s" % addr[0])
         return
-    len = temp_message.split(b' ')[0]
+    length = temp_message.split(b' ')[0]
     try:
-        len = int(len)
+        length = int(len)
     except ValueError:
         remove(conn)
         return
     temp_message = b' '.join(temp_message.split(b' ')[1:])
-    while len(temp_message) < len:
+    while len(temp_message) < length:
         temp_message += conn.recv(socket_message_size)
     clients_keys[conn] = crypt_keys.str_to_public(temp_message)
 
