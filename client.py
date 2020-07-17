@@ -194,8 +194,8 @@ def message_with_len(message):
         message = message.encode()
     except:
         pass
-    str_len = str(len(message))
-    return ("0" * (3 - len(str_len))).encode() + str_len.encode() + message
+    str_len = str(len(message)).encode()
+    return b'%s%s %s' % (b'0' * (3 - len(str_len)), str_len, message)
 
 
 
@@ -330,8 +330,8 @@ def send_message(message, skt, public_server, private_key):
     message = crypt_keys.encrypt(message, public_server)
     sign_message = crypt_keys.sign(message, private_key)
     message = message_with_len(message)
-    sign_message = message_with_len(sign_message)
-    skt.send(message + sign_message)
+    sign_message = sign_message
+    skt.send(b'%s%s' % (message, sign_message))
 
 def disconnect(reason="server disconnect..."):
     global connect
