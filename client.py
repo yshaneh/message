@@ -159,12 +159,12 @@ def handle_commands(message):
         skt.send(b"%d %s%s" % (len(signed), signed, str_public))
         console.write("public key is sent to the server\n")
 
-        
+
 
 
 def print_response(message):
     console.write("\r%s\r%s\n<you> " % (" " * 500, get_response(message)), end="")
-    
+
 
 def get_response(message):
     try:
@@ -363,7 +363,7 @@ def login(username, password):
     if message == None:
         return False
     try:
-        console.write(messages[message]) 
+        console.write(messages[message])
     except:
         pass
     return message == 3
@@ -377,7 +377,7 @@ def signup(username, password, confirm_password):
     message = status()
     if message == None:
         return False
-    console.write(messages[message]) 
+    console.write(messages[message])
     return message == 3
 
 def check_code(code, public_server):
@@ -426,7 +426,7 @@ def connect():
     console.write("key received from server")
     check_code(message[:code_size], public_server)
     console.write("send your public key to server")
-    skt.send(str_public)
+    skt.send(b'%d %s' % (len(str_public), str_public))
     console.write("key is sent to the server\n\n")
 
 def identification():
